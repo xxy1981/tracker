@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="120 seconds" debug="true">
-    <property name="LOG_DIR" value="/data/logs/paas"/>
+    <property name="LOG_DIR" value="/data/logs"/>
     <property name="PROJECT_NAME" value="tracker"/>
     <property name="log.com.xxytech" value="INFO"/>
     <property name="log.root.level" value="WARN"/>

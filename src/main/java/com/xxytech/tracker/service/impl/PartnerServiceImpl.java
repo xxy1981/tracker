@@ -3,6 +3,8 @@ package com.xxytech.tracker.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.xxytech.tracker.entity.Partner;
 import com.xxytech.tracker.repository.PartnerRepository;
 import com.xxytech.tracker.service.PartnerService;
+import com.xxytech.tracker.utils.CacheUtils;
 
 @Service("partnerService")
 public class PartnerServiceImpl implements PartnerService{
@@ -21,6 +24,11 @@ public class PartnerServiceImpl implements PartnerService{
 
 	@Autowired
     private PartnerRepository partnerRepository;
+	
+	@PostConstruct
+	private void init(){
+		partnerRepository.findAll().forEach(p -> CacheUtils.putPartner(p));
+	}
 	
 	@Override
 	public Page<Partner> findByIdAndName(String id, String name, Pageable pageable) {
@@ -45,12 +53,14 @@ public class PartnerServiceImpl implements PartnerService{
 	@Override
 	public Boolean add(Partner partner) {
 		partnerRepository.save(partner);
+		CacheUtils.putPartner(partner);
 		return true;
 	}
 
 	@Override
 	public Boolean update(Partner partner) {
 		partnerRepository.save(partner);
+		CacheUtils.putPartner(partner);
 		return true;
 	}
 
@@ -59,6 +69,7 @@ public class PartnerServiceImpl implements PartnerService{
 		if(ids != null){
 			for(String id : ids){
 				partnerRepository.delete(id);
+				CacheUtils.removePartner(id);
 			}
 		}
 	}
