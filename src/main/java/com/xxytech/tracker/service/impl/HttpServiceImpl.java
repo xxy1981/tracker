@@ -1,6 +1,7 @@
 package com.xxytech.tracker.service.impl;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,10 +65,10 @@ public class HttpServiceImpl implements HttpService{
             String content = IOUtils.toString(response.getEntity().getContent());
             int statusCode = response.getStatusLine().getStatusCode();
             if (200 == statusCode) {
-                logger.info("###################### Successful call chn[{}], idfa[{}], sid[{}], ip[{}], url [{}], ua [{}], http status is [{}], return content is\r\n{}", 
+                logger.info("###################### Successful call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
                 		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
             } else {
-                logger.error("###################### Failed call chn[{}], idfa[{}], sid[{}], ip[{}], url [{}], ua [{}], http status is [{}], return content is\r\n{}", 
+                logger.error("###################### Failed call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
                 		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
             }
         } catch (Exception e) {
@@ -115,17 +116,19 @@ public class HttpServiceImpl implements HttpService{
         	ulr.append("&action=").append("none");
         	ulr.append("&clicktime=").append(String.valueOf(System.currentTimeMillis()));
         	ulr.append("&ip=").append(clinetIp);
-        	ulr.append("&useragent=").append(ua);
+        	ulr.append("&useragent=").append(URLEncoder.encode(ua, "UTF-8"));
+        	
+        	logger.warn("###################### Send url[{}]", ulr.toString());
         	
         	HttpGet httpGet = new HttpGet(ulr.toString());//https://lnk0.com/URhcE9?chn=Inmobi&idfa=$IDA&sid=$SID&ip=$USER_IP
         	response = httpclient.execute(httpGet);
             String content = IOUtils.toString(response.getEntity().getContent());
             int statusCode = response.getStatusLine().getStatusCode();
             if (200 == statusCode) {
-                logger.info("###################### Successful call chn[{}], idfa[{}], sid[{}], ip[{}], url [{}], ua [{}], http status is [{}], return content is\r\n{}", 
+                logger.info("###################### Successful call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
                 		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
             } else {
-                logger.error("###################### Failed call chn[{}], idfa[{}], sid[{}], ip[{}], url [{}], ua [{}], http status is [{}], return content is\r\n{}", 
+                logger.error("###################### Failed call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
                 		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
             }
         } catch (Exception e) {
@@ -179,10 +182,10 @@ public class HttpServiceImpl implements HttpService{
             String content = IOUtils.toString(response.getEntity().getContent());
             int statusCode = response.getStatusLine().getStatusCode();
             if (200 == statusCode) {
-                logger.info("###################### Successful active feeback data[{}], url [{}], http status is [{}], return content is\r\n{}", 
+                logger.info("###################### Successful active feeback data[{}], url[{}], http status is [{}], return content is\r\n{}", 
                 		data, campaign.getThirdUrl(), statusCode, content);
             } else {
-                logger.error("###################### Failed active feeback data[{}], url [{}], http status is [{}], return content is\r\n{}", 
+                logger.error("###################### Failed active feeback data[{}], url[{}], http status is [{}], return content is\r\n{}", 
                 		data, campaign.getThirdUrl(), statusCode, content);
             }
         } catch (Exception e) {

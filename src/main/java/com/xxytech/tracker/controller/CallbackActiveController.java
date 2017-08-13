@@ -81,6 +81,8 @@ public class CallbackActiveController extends AbstractController {
                        	@RequestParam(value = "view_attributed", defaultValue="", required = false) String viewAttributed,
                        	@RequestParam(value = "partnerId", defaultValue="", required = false) String partnerId,
                        	@RequestParam(value = "appId", defaultValue="", required = false) String appId,
+                       	@RequestParam(value = "ip", defaultValue="", required = false) String ip,
+                       	@RequestParam(value = "activeTime", defaultValue="0", required = false) Long activeTime,
                        	HttpServletRequest httpRequest,
                        	HttpServletResponse httpResponse
                       	) {
@@ -102,12 +104,33 @@ public class CallbackActiveController extends AbstractController {
     	try {
     		CallbackActivate callbackActive = new CallbackActivate();
     		callbackActive.setSid(sid);
-    		callbackActive.setIdfa(tracker.getIdfa());
-    		callbackActive.setO1(tracker.getO1());
+    		
+    		if(StringUtils.isNotBlank(idfa)){
+    			callbackActive.setIdfa(idfa);
+    		}else{
+    			callbackActive.setIdfa(tracker.getIdfa());
+    		}
+    			
+    		if(StringUtils.isNotBlank(o1)){
+    			callbackActive.setO1(o1);
+    		}else{
+    			callbackActive.setO1(tracker.getO1());
+    		}
+    		
+    		if(StringUtils.isNotBlank(ip)){
+    			callbackActive.setIp(ip);
+    		}else{
+    			callbackActive.setIp(tracker.getIp());
+    		}
     		callbackActive.setPartnerId(tracker.getPartnerId());
     		callbackActive.setAppId(campaign.getAppId());
     		callbackActive.setViewAttributed(viewAttributed);
-    		callbackActive.setCreateTime(new Date());
+    		
+    		if(activeTime != null && activeTime != 0){
+    			callbackActive.setCreateTime(new Date(activeTime));
+    		}else{
+    			callbackActive.setCreateTime(new Date());
+    		}
 			
 			callbackActiveService.save(callbackActive);
 		} catch (Exception e) {

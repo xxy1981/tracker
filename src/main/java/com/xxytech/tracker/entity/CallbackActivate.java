@@ -30,6 +30,12 @@ public class CallbackActivate implements Serializable {
     @Column(name="app_id")
     private String appId;
     
+    @Column(name="ip")
+    private String ip;
+    
+    @Column(name="ua")
+    private String ua;
+    
     @Column(name="event_name")
     private String eventName;
     
@@ -103,4 +109,21 @@ public class CallbackActivate implements Serializable {
 		this.createTime = createTime;
 	}
 
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public String getUa() {
+		return ua;
+	}
+
+	public void setUa(String ua) {
+		this.ua = ua;
+	}
+
+	
 }
