@@ -15,19 +15,19 @@ import com.xxytech.tracker.entity.Tracker;
 
 public class TrackerSpecifications {
 
-    public static Specification<Tracker> buildQuery(String impId, String siteId, String trackingPartner) {
+    public static Specification<Tracker> buildQuery(String sid, String channel, String partnerId) {
         return new Specification<Tracker>() {
             @Override
             public Predicate toPredicate(Root<Tracker> root, CriteriaQuery<?> cq, CriteriaBuilder cb) {
             	List<Predicate> list = new ArrayList<Predicate>();
-            	if (StringUtils.isNotBlank(impId)) {
-            		 list.add(cb.equal(root.get("impId").as(String.class), impId));
+            	if (StringUtils.isNotBlank(sid)) {
+            		 list.add(cb.equal(root.get("sid").as(String.class), sid));
                 }
-            	if (StringUtils.isNotBlank(siteId)) {
-           		 	list.add(cb.equal(root.get("siteId").as(String.class), siteId));
+            	if (StringUtils.isNotBlank(channel)) {
+           		 	list.add(cb.equal(root.get("channel").as(String.class), channel));
             	}
-            	if (StringUtils.isNotBlank(trackingPartner)) {
-            		list.add(cb.equal(root.get("trackingPartner").as(String.class), trackingPartner));
+            	if (StringUtils.isNotBlank(partnerId)) {
+            		list.add(cb.equal(root.get("partnerId").as(String.class), partnerId));
             	}
                 Predicate[] p = new Predicate[list.size()];  
                 cq.where(cb.and(list.toArray(p)));

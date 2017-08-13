@@ -20,15 +20,15 @@ public class CallbackActiveServiceImpl implements CallbackActiveService{
     private CallbackActivateRepository callbackActiveRepository;
 	
 	@Override
-	public Page<CallbackActivate> findByImpIdAndTrackingPartner(String impId, String trackingPartner,
+	public Page<CallbackActivate> findBySidAndPartnerId(String sid, String partnerId,
 			Pageable pageable) {
-		if(StringUtils.isNotBlank(impId) && StringUtils.isNotBlank(trackingPartner)){
-			return callbackActiveRepository.findByImpIdAndTrackingPartner(impId, trackingPartner, pageable);
+		if(StringUtils.isNotBlank(sid) && StringUtils.isNotBlank(partnerId)){
+			return callbackActiveRepository.findBySidAndPartnerId(sid, partnerId, pageable);
 		}else{
-			if(StringUtils.isNotBlank(impId) && StringUtils.isBlank(trackingPartner)){
-				return callbackActiveRepository.findByImpId(impId, pageable);
-			}else if(StringUtils.isBlank(impId) && StringUtils.isNotBlank(trackingPartner)){
-				return callbackActiveRepository.findByTrackingPartner(trackingPartner, pageable);
+			if(StringUtils.isNotBlank(sid) && StringUtils.isBlank(partnerId)){
+				return callbackActiveRepository.findBySid(sid, pageable);
+			}else if(StringUtils.isBlank(sid) && StringUtils.isNotBlank(partnerId)){
+				return callbackActiveRepository.findByPartnerId(partnerId, pageable);
 			}else{
 				return callbackActiveRepository.findAll(pageable);
 			}

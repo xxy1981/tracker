@@ -21,12 +21,12 @@
 		<div class="detail">
 	    	<fieldset class="filter">
 	    		<form id="form-search" action="${rc.contextPath}/tracker" method="get">
-		            <input type="text" name="impId" value="${impId!}" placeholder="请输入ImpID" style="width:300px">
-		            <input type="text" name="siteId" value="${siteId!}" placeholder="请输入SiteID" style="width:300px">
-		            <select name="trackingPartner" style="width:300px">
+		            <input type="text" name="sid" value="${sid!}" placeholder="请输入流水号" style="width:300px">
+		            <input type="text" name="channel" value="${channel!}" placeholder="请输入渠道" style="width:300px">
+		            <select name="partnerId" style="width:300px">
 		            	<option value="">---请选择客户---</option>
 		            	<#list parters as partner>
-		            		<#if trackingPartner==partner.id>
+		            		<#if partnerId==partner.id>
 			            		<option value="${partner.id}" selected="selected">${partner.getName()}</option>
 			            	<#else>
 			            		<option value="${partner.id}">${partner.getName()}</option>
@@ -43,10 +43,10 @@
 			<#if (list??) && (list?size > 0)>
 	    	<table class="table-list">
 	    		<tr>
-	    			<th style="width:15%">ImpID</th>
+	    			<th style="width:15%">流水号</th>
 	    			<th style="width:20%">ISO设备ID</th>
 	    			<th style="width:20%">Android设备ID</th>
-	    			<th style="width:10%">SiteID</th>
+	    			<th style="width:10%">渠道</th>
 	    			<th style="width:10%">客户ID</th>
 	    			<th style="width:10%">用户IP</th>
 	    			<th>创建时间</th>
@@ -54,11 +54,11 @@
 	    		<#if list??>
 	    			<#list list as tracker>
 			    		<tr>
-			    			<td>${tracker.impId!}</td>
+			    			<td>${tracker.sid!}</td>
 			    			<td>${tracker.idfa!}</td>
 			    			<td>${tracker.o1!}</td>
-			    			<td>${tracker.siteId!}</td>
-			    			<td>${tracker.trackingPartner!}</td>
+			    			<td>${tracker.channel!}</td>
+			    			<td>${tracker.partnerId!}</td>
 			    			<td>${tracker.ip!}</td>
 			    			<td>${tracker.createTime!}</td>				
 			    		</tr>

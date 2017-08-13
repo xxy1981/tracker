@@ -6,7 +6,9 @@ import org.springframework.data.domain.Pageable;
 import com.xxytech.tracker.entity.Tracker;
 
 public interface TrackerService {
-	Page<Tracker> findByImpIdAndSiteIdAndTrackingPartner(String impId, String siteId, String trackingPartner, Pageable pageable);
+	Page<Tracker> findBySidAndChannelAndPartnerId(String sid, String channel, String partnerId, Pageable pageable);
 	
 	void save(Tracker tracker);
+	
+	Tracker getTracker(String sid);
 }

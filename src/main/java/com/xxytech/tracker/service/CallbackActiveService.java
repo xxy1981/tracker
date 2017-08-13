@@ -6,6 +6,6 @@ import org.springframework.data.domain.Pageable;
 import com.xxytech.tracker.entity.CallbackActivate;
 
 public interface CallbackActiveService {
-	Page<CallbackActivate> findByImpIdAndTrackingPartner(String impId, String trackingPartner, Pageable pageable);
+	Page<CallbackActivate> findBySidAndPartnerId(String sid, String partnerId, Pageable pageable);
 	void save(CallbackActivate callbackActive);
 }

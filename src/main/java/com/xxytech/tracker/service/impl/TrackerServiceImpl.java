@@ -18,8 +18,6 @@ import com.xxytech.tracker.service.TrackerService;
 public class TrackerServiceImpl implements TrackerService{
 	private static final Logger logger = LoggerFactory.getLogger(TrackerServiceImpl.class);
 	
-	@Value("${talking.data.url}")
-    private String	talkingDataUrl;
 	@Value("${httpclinet.pool.enable:true}")
     private boolean	httpPoolEnable;
 	
@@ -27,15 +25,20 @@ public class TrackerServiceImpl implements TrackerService{
     private TrackerRepository trackerRepository;
 	
 	@Override
-	public Page<Tracker> findByImpIdAndSiteIdAndTrackingPartner(String impId, String siteId, String trackingPartner,
+	public Page<Tracker> findBySidAndChannelAndPartnerId(String sid, String channel, String trackingPartner,
 			Pageable pageable) {
-		Specification<Tracker> trackerSpecification = TrackerSpecifications.buildQuery(impId, siteId, trackingPartner);
+		Specification<Tracker> trackerSpecification = TrackerSpecifications.buildQuery(sid, channel, trackingPartner);
 		return trackerRepository.findAll(trackerSpecification, pageable);
 	}
 
 	@Override
 	public void save(Tracker tracker) {
 		trackerRepository.save(tracker);
+	}
+
+	@Override
+	public Tracker getTracker(String sid) {
+		return trackerRepository.findOne(sid);
 	}
 
 }

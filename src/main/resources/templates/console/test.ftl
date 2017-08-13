@@ -9,7 +9,7 @@
 </head>
 
 <body>
-<@h.header current="partner" />
+<@h.header current="Test" />
 <div class="main-panel">
 	<@m.menu current="1-4" />
     <div class="right-panel">
@@ -21,17 +21,15 @@
 		<div class="detail">
 	    	<fieldset class="filter">
 	    		<form id="form-search" action="${rc.contextPath}/serveTest" method="get">
-		            <input type="text" name="impId" value="${impId!}" placeholder="请输入ImpID" style="width:400px"><br/>
+		            <select name="campaignId" style="width:412px">
+		            	<#list campaigns as campaign>
+		            		<option value="${campaign.id}">${campaign.getName()}</option>
+		            	</#list>
+		            </select>（请选择活动）<br/>
+		            <input type="text" name="sid" value="${sid!}" placeholder="请输入流水号" style="width:400px"><br/>
 		            <input type="text" name="idfa" value="${idfa!}" placeholder="请输入ISO设备ID" style="width:400px">（苹果设备填写）<br/>
 		            <input type="text" name="o1" value="${o1!}" placeholder="请输入安卓设备ID" style="width:400px">（安卓设备填写）<br/>
-		            <input type="text" name="siteId" value="${siteId!}" placeholder="请输入SiteID" style="width:400px"><br/>
-		            <input type="text" name="chn" value="${chn!}" placeholder="请输入CHN" style="width:400px"><br/>
-		            <select name="trackingPartner" style="width:412px">
-		            	<option value="">---请选择客户---</option>
-		            	<#list parters as partner>
-		            		<option value="${partner.id}">${partner.getName()}</option>
-		            	</#list>
-		            </select><br/>
+		            <input type="text" name="subChn" value="${subChn!}" placeholder="请输入二级渠道" style="width:400px"><br/>
 		            <select name="action" style="width:412px">
 		            	<option value="click">点击测试</option>
 		            	<option value="impression">曝光测试</option>

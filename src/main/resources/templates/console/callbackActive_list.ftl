@@ -21,11 +21,11 @@
 		<div class="detail">
 	    	<fieldset class="filter">
 	    		<form id="form-search" action="${rc.contextPath}/callbackActive" method="get">
-		            <input type="text" name="impId" value="${impId!}" placeholder="请输入ImpId" style="width:300px">
-		            <select name="trackingPartner" style="width:300px">
+		            <input type="text" name="sid" value="${sid!}" placeholder="请输入流水号" style="width:300px">
+		            <select name="partnerId" style="width:300px">
 		            	<option value="">---请选择客户---</option>
 		            	<#list parters as partner>
-		            		<#if trackingPartner==partner.id>
+		            		<#if partnerId==partner.id>
 			            		<option value="${partner.id}" selected="selected">${partner.getName()}</option>
 			            	<#else>
 			            		<option value="${partner.id}">${partner.getName()}</option>
@@ -42,7 +42,7 @@
 			<#if (list??) && (list?size > 0)>
 	    	<table class="table-list">
 	    		<tr>
-	    			<th style="width:20%">ImpID</th>
+	    			<th style="width:20%">流水号</th>
 	    			<th style="width:20%">ISO设备ID</th>
 	    			<th style="width:20%">Android设备ID</th>
 	    			<th style="width:15%">客户ID</th>
@@ -52,11 +52,11 @@
 	    		<#if list??>
 	    			<#list list as callbackActive>
 			    		<tr>
-			    			<td>${callbackActive.impId!}</td>
+			    			<td>${callbackActive.sid!}</td>
 			    			<td>${callbackActive.idfa!}</td>
 			    			<td>${callbackActive.o1!}</td>
-			    			<td>${callbackActive.trackingPartner!}</td>
-			    			<td>${callbackActive.propertyId!}</td>
+			    			<td>${callbackActive.partnerId!}</td>
+			    			<td>${callbackActive.appId!}</td>
 			    			<td>${callbackActive.createTime!}</td>				
 			    		</tr>
 		    		</#list>

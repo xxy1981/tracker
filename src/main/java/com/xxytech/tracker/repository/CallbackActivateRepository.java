@@ -8,11 +8,11 @@ import com.xxytech.tracker.entity.CallbackActivate;
 
 public interface CallbackActivateRepository extends PagingAndSortingRepository<CallbackActivate, String>{
 
-	Page<CallbackActivate> findByImpIdAndTrackingPartner(String impId, String trackingPartner, Pageable pageable);
+	Page<CallbackActivate> findBySidAndPartnerId(String sid, String partnerId, Pageable pageable);
 	
-	Page<CallbackActivate> findByImpId(String impId, Pageable pageable);
+	Page<CallbackActivate> findBySid(String sid, Pageable pageable);
 	
-	Page<CallbackActivate> findByTrackingPartner(String trackingPartner, Pageable pageable);
+	Page<CallbackActivate> findByPartnerId(String partnerId, Pageable pageable);
 	
     
 }

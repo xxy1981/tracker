@@ -11,8 +11,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,8 +23,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.xxytech.tracker.entity.Campaign;
 import com.xxytech.tracker.entity.Tracker;
 import com.xxytech.tracker.enums.DeviceType;
+import com.xxytech.tracker.service.CampaignService;
 import com.xxytech.tracker.service.HttpService;
 import com.xxytech.tracker.service.PartnerService;
 import com.xxytech.tracker.service.TrackerService;
@@ -37,28 +42,31 @@ public class TrackerController extends AbstractController {
     @Autowired
     private PartnerService partnerService;
     @Autowired
+    private CampaignService campaignService;
+    @Autowired
     private HttpService httpService;
 
     @RequestMapping(value = "/tracker", method = RequestMethod.GET)
-    public ModelAndView query(@RequestParam(value = "impId", defaultValue="", required = false) String impId,
-                              @RequestParam(value = "siteId", defaultValue="", required = false) String siteId,
-                              @RequestParam(value = "trackingPartner", defaultValue="", required = false) String trackingPartner,
+    public ModelAndView query(@RequestParam(value = "sid", defaultValue="", required = false) String sid,
+                              @RequestParam(value = "channel", defaultValue="", required = false) String channel,
+                              @RequestParam(value = "partnerId", defaultValue="", required = false) String partnerId,
                               @RequestParam(value = "pageNo", defaultValue="0", required = false) String pageNoStr, 
                               ModelMap model) {
 
         supportEnum(model);
         supportJavaMethod(model);
-
+        
         Integer pageNo = getPageNo(pageNoStr);
         // 查询条件回填
         model.addAttribute("pageNo", pageNo);
-        model.addAttribute("impId", impId == null ? "" : impId);
-        model.addAttribute("siteId", siteId == null ? "" : siteId);
-        model.addAttribute("trackingPartner", trackingPartner == null ? "" : trackingPartner);
+        model.addAttribute("sid", sid == null ? "" : sid);
+        model.addAttribute("channel", channel == null ? "" : channel);
+        model.addAttribute("partnerId", partnerId == null ? "" : partnerId);
         model.addAttribute("parters", partnerService.findAll());
 
-        PageRequest pr = new PageRequest(getPageNo(pageNoStr), getPageSize("10"));
-        Page<Tracker> page = trackerService.findByImpIdAndSiteIdAndTrackingPartner(impId, siteId, trackingPartner, pr);
+        Sort sort = new Sort(Direction.DESC,"createTime");
+        PageRequest pr = new PageRequest(getPageNo(pageNoStr), getPageSize("10"), sort);
+        Page<Tracker> page = trackerService.findBySidAndChannelAndPartnerId(sid, channel, partnerId, pr);
         model.addAttribute("page", page);
         model.addAttribute("list", page.getContent());
         model.addAttribute("pageHtmlDisplay", PageHtmlDisplay.display(page));
@@ -66,15 +74,14 @@ public class TrackerController extends AbstractController {
         return new ModelAndView("console/tracker_list");
     }
     
-    @RequestMapping(value = "/serve")
+    @RequestMapping(value = "/{campaignId}")
     @ResponseBody
-    public String serve(@RequestParam(value = "action", defaultValue="click", required = false) String action,
-           				@RequestParam(value = "impId", defaultValue="", required = false) String impId,
+    public String serveAuto(@PathVariable(value = "campaignId", required = true) String campaignId,
+           				@RequestParam(value = "action", defaultValue="click", required = false) String action,
+           				@RequestParam(value = "sid", defaultValue="", required = false) String sid,
                        	@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
                        	@RequestParam(value = "o1", defaultValue="", required = false) String o1,
-                       	@RequestParam(value = "siteId", defaultValue="", required = false) String siteId,
-                       	@RequestParam(value = "chn", defaultValue="", required = false) String chn,
-                       	@RequestParam(value = "trackingPartner", defaultValue="", required = false) String trackingPartner,
+                       	@RequestParam(value = "subChn", defaultValue="", required = false) String subChn,
                        	@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
                        	@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
                        	HttpServletRequest httpRequest,
@@ -83,18 +90,75 @@ public class TrackerController extends AbstractController {
 
     	String clinetIp = getIpAddr(httpRequest);
     	String userAgent = getUserAgent(httpRequest);
+
+    	Campaign campaign = campaignService.getCampaign(campaignId);
+    	if(campaign == null){
+    		return "ko";
+    	}
         
-    	httpService.httpGetCall(chn, idfa, impId, clinetIp);
+    	httpService.httpGetCall(campaign, idfa, sid, o1, ip == null ? clinetIp : ip, ua == null ? userAgent : ua);
     	
     	try {
 			Tracker tracker = new Tracker();
-			tracker.setImpId(impId);
+			tracker.setSid(sid);
 			tracker.setIdfa(idfa);
 			tracker.setO1(o1);
-			tracker.setSiteId(siteId);
-			tracker.setIp(clinetIp);
-			tracker.setTrackingPartner(trackingPartner);
-			tracker.setUa(ua);
+			tracker.setCampaignId(campaignId);
+			tracker.setChannel(campaign.getChannel());
+			tracker.setSubChannel(subChn);
+			tracker.setIp(ip == null ? clinetIp : ip);
+			tracker.setUa(ua == null ? userAgent : ua);
+			tracker.setPartnerId(campaign.getPartnerId());
+			tracker.setCreateTime(new Date());
+			if(StringUtils.isNotBlank(idfa)){
+				tracker.setDeviceType(DeviceType.IOS.name());
+			}else{
+				tracker.setDeviceType(DeviceType.ANDROID.name());
+			}
+			
+			trackerService.save(tracker);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+        
+        return "ok";
+    }
+    
+    @RequestMapping(value = "/serve")
+    @ResponseBody
+    public String serve(@RequestParam(value = "campaignId", defaultValue="", required = false) String campaignId,
+    					@RequestParam(value = "action", defaultValue="click", required = false) String action,
+           				@RequestParam(value = "sid", defaultValue="", required = false) String sid,
+                       	@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
+                       	@RequestParam(value = "o1", defaultValue="", required = false) String o1,
+                       	@RequestParam(value = "subChn", defaultValue="", required = false) String subChn,
+                       	@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
+                       	@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
+                       	HttpServletRequest httpRequest,
+                       	HttpServletResponse httpResponse
+                      	) {
+
+    	String clinetIp = getIpAddr(httpRequest);
+    	String userAgent = getUserAgent(httpRequest);
+
+    	Campaign campaign = campaignService.getCampaign(campaignId);
+    	if(campaign == null){
+    		return "ko";
+    	}
+        
+    	httpService.httpGetCall(campaign, idfa, sid, o1, ip == null ? clinetIp : ip, ua == null ? userAgent : ua);
+    	
+    	try {
+			Tracker tracker = new Tracker();
+			tracker.setSid(sid);
+			tracker.setIdfa(idfa);
+			tracker.setO1(o1);
+			tracker.setCampaignId(campaignId);
+			tracker.setChannel(campaign.getChannel());
+			tracker.setSubChannel(subChn);
+			tracker.setIp(ip == null ? clinetIp : ip);
+			tracker.setUa(ua == null ? userAgent : ua);
+			tracker.setPartnerId(campaign.getPartnerId());
 			tracker.setCreateTime(new Date());
 			if(StringUtils.isNotBlank(idfa)){
 				tracker.setDeviceType(DeviceType.IOS.name());
@@ -111,45 +175,51 @@ public class TrackerController extends AbstractController {
     }
     
     @RequestMapping(value = "/serveTest")
-    public String serveTest(@RequestParam(value = "action", defaultValue="click", required = false) String action,
-           				@RequestParam(value = "impId", defaultValue="", required = false) String impId,
-                       	@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
-                       	@RequestParam(value = "o1", defaultValue="", required = false) String o1,
-                       	@RequestParam(value = "siteId", defaultValue="", required = false) String siteId,
-                       	@RequestParam(value = "chn", defaultValue="", required = false) String chn,
-                       	@RequestParam(value = "trackingPartner", defaultValue="", required = false) String trackingPartner,
-                       	@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
-                       	@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
-                       	HttpServletRequest httpRequest,
-                       	HttpServletResponse httpResponse
-                      	) {
+    public String serveTest(@RequestParam(value = "campaignId", defaultValue="", required = false) String campaignId,
+							@RequestParam(value = "action", defaultValue="click", required = false) String action,
+							@RequestParam(value = "sid", defaultValue="", required = false) String sid,
+							@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
+							@RequestParam(value = "o1", defaultValue="", required = false) String o1,
+							@RequestParam(value = "subChn", defaultValue="", required = false) String subChn,
+							@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
+							@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
+							HttpServletRequest httpRequest,
+							HttpServletResponse httpResponse
+          	) {
 
-    	String clinetIp = getIpAddr(httpRequest);
-    	String userAgent = getUserAgent(httpRequest);
-        
-    	httpService.httpGetCall(chn, idfa, impId, clinetIp);
-    	
-    	try {
+		String clinetIp = getIpAddr(httpRequest);
+		String userAgent = getUserAgent(httpRequest);
+		
+		Campaign campaign = campaignService.getCampaign(campaignId);
+		if(campaign == null){
+			return "ko";
+		}
+		
+		httpService.httpGetCall(campaign, idfa, sid, o1, ip == null ? clinetIp : ip, ua == null ? userAgent : ua);
+		
+		try {
 			Tracker tracker = new Tracker();
-			tracker.setImpId(impId);
+			tracker.setSid(sid);
 			tracker.setIdfa(idfa);
 			tracker.setO1(o1);
-			tracker.setSiteId(siteId);
-			tracker.setIp(clinetIp);
-			tracker.setTrackingPartner(trackingPartner);
-			tracker.setUa(ua);
+			tracker.setCampaignId(campaignId);
+			tracker.setChannel(campaign.getChannel());
+			tracker.setSubChannel(subChn);
+			tracker.setIp(ip == null ? clinetIp : ip);
+			tracker.setUa(ua == null ? userAgent : ua);
+			tracker.setPartnerId(campaign.getPartnerId());
 			tracker.setCreateTime(new Date());
 			if(StringUtils.isNotBlank(idfa)){
 				tracker.setDeviceType(DeviceType.IOS.name());
 			}else{
 				tracker.setDeviceType(DeviceType.ANDROID.name());
 			}
-			
+		
 			trackerService.save(tracker);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
-        
-        return "redirect:/tracker";
-    }
+	        
+	    return "redirect:/tracker";
+	}
 }

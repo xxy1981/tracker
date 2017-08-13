@@ -15,8 +15,8 @@ public class CallbackActivate implements Serializable {
     private static final long serialVersionUID = 8127035730921331234L;
 
     @Id
-    @Column(nullable = false, name="imp_id")
-    private String impId;
+    @Column(nullable = false, name="sid")
+    private String sid;
 
     @Column(name="idfa")
     private String idfa;
@@ -27,24 +27,24 @@ public class CallbackActivate implements Serializable {
     @Column(name="view_attributed")
     private String viewAttributed;
     
-    @Column(name="property_id")
-    private String propertyId;
+    @Column(name="app_id")
+    private String appId;
     
     @Column(name="event_name")
     private String eventName;
     
-    @Column(name="tracking_partner")
-    private String trackingPartner;
+    @Column(name="partner_id")
+    private String partnerId;
     
     @Column(name="create_time")
     private Date createTime;
 
-	public String getImpId() {
-		return impId;
+	public String getSid() {
+		return sid;
 	}
 
-	public void setImpId(String impId) {
-		this.impId = impId;
+	public void setSid(String sid) {
+		this.sid = sid;
 	}
 
 	public String getIdfa() {
@@ -71,12 +71,12 @@ public class CallbackActivate implements Serializable {
 		this.viewAttributed = viewAttributed;
 	}
 
-	public String getPropertyId() {
-		return propertyId;
+	public String getAppId() {
+		return appId;
 	}
 
-	public void setPropertyId(String propertyId) {
-		this.propertyId = propertyId;
+	public void setAppId(String appId) {
+		this.appId = appId;
 	}
 
 	public String getEventName() {
@@ -87,12 +87,12 @@ public class CallbackActivate implements Serializable {
 		this.eventName = eventName;
 	}
 
-	public String getTrackingPartner() {
-		return trackingPartner;
+	public String getPartnerId() {
+		return partnerId;
 	}
 
-	public void setTrackingPartner(String trackingPartner) {
-		this.trackingPartner = trackingPartner;
+	public void setPartnerId(String partnerId) {
+		this.partnerId = partnerId;
 	}
 
 	public Date getCreateTime() {
@@ -102,6 +102,5 @@ public class CallbackActivate implements Serializable {
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
 	}
-
 
 }

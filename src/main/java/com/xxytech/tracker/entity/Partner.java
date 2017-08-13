@@ -21,12 +21,6 @@ public class Partner implements Serializable {
     @Column(name="name")
     private String name;
     
-    @Column(name="property_id")
-    private String propertyId;
-    
-    @Column(name="chn")
-    private String chn;
-    
     @Column(name="create_time")
     private Date createTime;
 
@@ -44,22 +38,6 @@ public class Partner implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public String getPropertyId() {
-		return propertyId;
-	}
-
-	public void setPropertyId(String propertyId) {
-		this.propertyId = propertyId;
-	}
-
-	public String getChn() {
-		return chn;
-	}
-
-	public void setChn(String chn) {
-		this.chn = chn;
 	}
 
 	public Date getCreateTime() {

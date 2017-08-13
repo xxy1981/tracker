@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.xxytech.tracker.entity.Campaign;
 import com.xxytech.tracker.http.HttpClientFactory;
 import com.xxytech.tracker.service.HttpService;
 
@@ -27,13 +29,11 @@ import com.xxytech.tracker.service.HttpService;
 public class HttpServiceImpl implements HttpService{
 	private static final Logger logger = LoggerFactory.getLogger(HttpServiceImpl.class);
 	
-	@Value("${talking.data.url}")
-    private String	talkingDataUrl;
 	@Value("${httpclinet.pool.enable:true}")
     private boolean	httpPoolEnable;
 	
 	@Override
-	public void httpPostCall(String chn, String idfa, String impId, String clinetIp) {
+	public void httpPostCall(Campaign campaign, String sid, String idfa, String o1, String clinetIp, String ua) {
 		CloseableHttpClient httpclient = null;
 		CloseableHttpResponse response = null;
 		if(httpPoolEnable){
@@ -43,27 +43,35 @@ public class HttpServiceImpl implements HttpService{
 		}
 
         try {
-        	HttpPost httpPost = new HttpPost(talkingDataUrl);//https://lnk0.com/URhcE9?chn=Inmobi&idfa=$IDA&impId=$IMP_ID&ip=$USER_IP
+        	HttpPost httpPost = new HttpPost(campaign.getThirdUrl());//https://lnk0.com/URhcE9?chn=Inmobi&idfa=$IDFA&sid=$SID&ip=$USER_IP
         	
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-            nvps.add(new BasicNameValuePair("chn", chn));
-            nvps.add(new BasicNameValuePair("idfa", idfa));
-            nvps.add(new BasicNameValuePair("impId", impId));
+            
+            nvps.add(new BasicNameValuePair("chn", campaign.getChannel()));
+            nvps.add(new BasicNameValuePair("sid", sid));
+            if(StringUtils.isNotBlank(idfa)){
+            	nvps.add(new BasicNameValuePair("idfa", idfa));
+            }else{
+            	nvps.add(new BasicNameValuePair("androidid_sha1", o1));
+            }
+            nvps.add(new BasicNameValuePair("action", "none"));	
+            nvps.add(new BasicNameValuePair("clicktime", String.valueOf(System.currentTimeMillis())));
             nvps.add(new BasicNameValuePair("ip", clinetIp));
+            nvps.add(new BasicNameValuePair("useragent", ua));
             
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             response = httpclient.execute(httpPost);
             String content = IOUtils.toString(response.getEntity().getContent());
             int statusCode = response.getStatusLine().getStatusCode();
             if (200 == statusCode) {
-                logger.info("###################### Successful call chn[{}], idfa[{}], impId[{}], ip[{}], url [{}], http status is [{}], return content is\r\n{}", 
-                		chn, idfa, impId, clinetIp, talkingDataUrl, statusCode, content);
+                logger.info("###################### Successful call chn[{}], idfa[{}], sid[{}], ip[{}], url [{}], ua [{}], http status is [{}], return content is\r\n{}", 
+                		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
             } else {
-                logger.error("###################### Failed call chn[{}], idfa[{}], impId[{}], ip[{}], url [{}], http status is [{}], return content is\r\n{}", 
-                		chn, idfa, impId, clinetIp, talkingDataUrl, statusCode, content);
+                logger.error("###################### Failed call chn[{}], idfa[{}], sid[{}], ip[{}], url [{}], ua [{}], http status is [{}], return content is\r\n{}", 
+                		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
             }
         } catch (Exception e) {
-            logger.error("###################### Failed call chn[" + chn + "], idfa[" + idfa + "], impId[" + impId + "], ip[" + clinetIp + "], url[" + talkingDataUrl + "]", e);
+            logger.error("###################### Failed call chn[" + campaign.getChannel() + "], idfa[" + idfa + "], sid[" + sid + "], ip[" + clinetIp + "], url[" + campaign.getThirdUrl() + "], ua[" + ua + "]", e);
         }finally{
         	if(response != null){
         		try {
@@ -87,7 +95,7 @@ public class HttpServiceImpl implements HttpService{
 	}
 	
 	@Override
-	public void httpGetCall(String chn, String idfa, String impId, String clinetIp) {
+	public void httpGetCall(Campaign campaign, String sid, String idfa, String o1, String clinetIp, String ua) {
 		CloseableHttpClient httpclient = null;
 		CloseableHttpResponse response = null;
 		if(httpPoolEnable){
@@ -97,19 +105,31 @@ public class HttpServiceImpl implements HttpService{
 		}
 
         try {
-        	HttpGet httpGet = new HttpGet(talkingDataUrl+"?chn=" + chn + "&idfa=" + idfa + "&impId=" + impId + "&ip=" + clinetIp);//https://lnk0.com/URhcE9?chn=Inmobi&idfa=$IDA&impId=$IMP_ID&ip=$USER_IP
+        	StringBuffer ulr = new StringBuffer(campaign.getThirdUrl()).append("?chn=").append(campaign.getChannel());
+        	ulr.append("&sid=").append(sid);
+        	if(StringUtils.isNotBlank(idfa)){
+        		ulr.append("&idfa=").append(idfa);
+            }else{
+            	ulr.append("&androidid_sha1=").append(o1);
+            }
+        	ulr.append("&action=").append("none");
+        	ulr.append("&clicktime=").append(String.valueOf(System.currentTimeMillis()));
+        	ulr.append("&ip=").append(clinetIp);
+        	ulr.append("&useragent=").append(ua);
+        	
+        	HttpGet httpGet = new HttpGet(ulr.toString());//https://lnk0.com/URhcE9?chn=Inmobi&idfa=$IDA&sid=$SID&ip=$USER_IP
         	response = httpclient.execute(httpGet);
             String content = IOUtils.toString(response.getEntity().getContent());
             int statusCode = response.getStatusLine().getStatusCode();
             if (200 == statusCode) {
-                logger.info("###################### Successful call chn[{}], idfa[{}], impId[{}], ip[{}], url [{}], http status is [{}], return content is\r\n{}", 
-                		chn, idfa, impId, clinetIp, talkingDataUrl, statusCode, content);
+                logger.info("###################### Successful call chn[{}], idfa[{}], sid[{}], ip[{}], url [{}], ua [{}], http status is [{}], return content is\r\n{}", 
+                		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
             } else {
-                logger.error("###################### Failed call chn[{}], idfa[{}], impId[{}], ip[{}], url [{}], http status is [{}], return content is\r\n{}", 
-                		chn, idfa, impId, clinetIp, talkingDataUrl, statusCode, content);
+                logger.error("###################### Failed call chn[{}], idfa[{}], sid[{}], ip[{}], url [{}], ua [{}], http status is [{}], return content is\r\n{}", 
+                		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
             }
         } catch (Exception e) {
-            logger.error("###################### Failed call chn[" + chn + "], idfa[" + idfa + "], impId[" + impId + "], ip[" + clinetIp + "], url[" + talkingDataUrl + "]", e);
+            logger.error("###################### Failed call chn[" + campaign.getChannel() + "], idfa[" + idfa + "], sid[" + sid + "], ip[" + clinetIp + "], url[" + campaign.getThirdUrl() + "], ua[" + ua + "]", e);
         }finally{
         	if(response != null){
         		try {
@@ -133,7 +153,7 @@ public class HttpServiceImpl implements HttpService{
 	}
 
 	@Override
-	public void activeFeeback(String status, String message, Integer code) {
+	public void activeFeeback(Campaign campaign, String status, String message, Integer code) {
 		JSONObject j = new JSONObject();  
         j.put("status", status);  
         j.put("message", message);
@@ -149,9 +169,7 @@ public class HttpServiceImpl implements HttpService{
 		}
 
         try {
-        	HttpPost httpPost = new HttpPost(talkingDataUrl);//https://lnk0.com/URhcE9?chn=Inmobi&idfa=$IDA&impId=$IMP_ID&ip=$USER_IP
-        	
-        	
+        	HttpPost httpPost = new HttpPost(campaign.getThirdUrl());//https://lnk0.com/URhcE9?chn=Inmobi&idfa=$IDA&impId=$IMP_ID&ip=$USER_IP
             
             httpPost.addHeader("Content-type","application/json; charset=utf-8");  
             httpPost.setHeader("Accept", "application/json");  
@@ -162,13 +180,13 @@ public class HttpServiceImpl implements HttpService{
             int statusCode = response.getStatusLine().getStatusCode();
             if (200 == statusCode) {
                 logger.info("###################### Successful active feeback data[{}], url [{}], http status is [{}], return content is\r\n{}", 
-                		data, talkingDataUrl, statusCode, content);
+                		data, campaign.getThirdUrl(), statusCode, content);
             } else {
                 logger.error("###################### Failed active feeback data[{}], url [{}], http status is [{}], return content is\r\n{}", 
-                		data, talkingDataUrl, statusCode, content);
+                		data, campaign.getThirdUrl(), statusCode, content);
             }
         } catch (Exception e) {
-            logger.error("###################### Failed active feeback data[" + data + "], url[" + talkingDataUrl + "]", e);
+            logger.error("###################### Failed active feeback data[" + data + "], url[" + campaign.getThirdUrl() + "]", e);
         }finally{
         	if(response != null){
         		try {

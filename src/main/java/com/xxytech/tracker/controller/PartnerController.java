@@ -5,6 +5,8 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +42,8 @@ public class PartnerController extends AbstractController {
         model.addAttribute("id", id == null ? "" : id);
         model.addAttribute("name", name == null ? "" : name);
 
-        PageRequest pr = new PageRequest(getPageNo(pageNoStr), getPageSize("10"));
+        Sort sort = new Sort(Direction.DESC,"createTime");
+        PageRequest pr = new PageRequest(getPageNo(pageNoStr), getPageSize("10"), sort);
         Page<Partner> page = partnerService.findByIdAndName(id, name, pr);
         model.addAttribute("page", page);
         model.addAttribute("list", page.getContent());
@@ -78,11 +81,12 @@ public class PartnerController extends AbstractController {
     }
 
     @RequestMapping(value = "/partner/update", method = RequestMethod.POST)
-    public ModelAndView update(Partner partner, ModelMap model) {
+    public String update(Partner partner, ModelMap model) {
     	partner.setCreateTime(new Date());
         Boolean flag = partnerService.update(partner);
         model.addAttribute("msg", flag ? "修改成功" : "修改失败");
-        return new ModelAndView("console/update_result");
+        //return new ModelAndView("console/update_result");
+        return "redirect:/partner";
     }
 
     @RequestMapping(value = "/partner/update", method = RequestMethod.GET)
@@ -91,11 +95,12 @@ public class PartnerController extends AbstractController {
     }
 
     @RequestMapping(value = "/partner/add", method = RequestMethod.POST)
-    public ModelAndView add(Partner partner, ModelMap model) {
+    public String add(Partner partner, ModelMap model) {
     	partner.setCreateTime(new Date());
     	Boolean flag = partnerService.add(partner);
         model.addAttribute("msg", flag ? "添加成功" : "添加失败");
-        return new ModelAndView("console/add_result");
+        //return new ModelAndView("console/add_result");
+        return "redirect:/partner";
     }
 
     @RequestMapping(value = "/partner/add", method = RequestMethod.GET)

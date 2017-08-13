@@ -15,8 +15,8 @@ public class Tracker implements Serializable {
     private static final long serialVersionUID = 8127035730921338189L;
 
     @Id
-    @Column(nullable = false, name="imp_id")
-    private String impId;
+    @Column(nullable = false, name="sid")
+    private String sid;
 
     @Column(name="idfa")
     private String idfa;
@@ -24,8 +24,14 @@ public class Tracker implements Serializable {
     @Column(name="o1")
     private String o1;
     
-    @Column(name="site_id")
-    private String siteId;
+    @Column(name="campaign_id")
+    private String campaignId;
+    
+    @Column(name="channel")
+    private String channel;
+    
+    @Column(name="sub_channel")
+    private String subChannel;
     
     @Column(name="ip")
     private String ip;
@@ -36,18 +42,18 @@ public class Tracker implements Serializable {
     @Column(name="device_type")
     private String deviceType;
     
-    @Column(name="tracking_partner")
-    private String trackingPartner;
+    @Column(name="partner_id")
+    private String partnerId;
     
     @Column(name="create_time")
     private Date createTime;
 
-	public String getImpId() {
-		return impId;
+	public String getSid() {
+		return sid;
 	}
 
-	public void setImpId(String impId) {
-		this.impId = impId;
+	public void setSid(String sid) {
+		this.sid = sid;
 	}
 
 	public String getIdfa() {
@@ -66,12 +72,28 @@ public class Tracker implements Serializable {
 		this.o1 = o1;
 	}
 
-	public String getSiteId() {
-		return siteId;
+	public String getCampaignId() {
+		return campaignId;
 	}
 
-	public void setSiteId(String siteId) {
-		this.siteId = siteId;
+	public void setCampaignId(String campaignId) {
+		this.campaignId = campaignId;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+
+	public String getSubChannel() {
+		return subChannel;
+	}
+
+	public void setSubChannel(String subChannel) {
+		this.subChannel = subChannel;
 	}
 
 	public String getIp() {
@@ -98,12 +120,12 @@ public class Tracker implements Serializable {
 		this.deviceType = deviceType;
 	}
 
-	public String getTrackingPartner() {
-		return trackingPartner;
+	public String getPartnerId() {
+		return partnerId;
 	}
 
-	public void setTrackingPartner(String trackingPartner) {
-		this.trackingPartner = trackingPartner;
+	public void setPartnerId(String partnerId) {
+		this.partnerId = partnerId;
 	}
 
 	public Date getCreateTime() {
@@ -114,4 +136,5 @@ public class Tracker implements Serializable {
 		this.createTime = createTime;
 	}
 
+    
 }

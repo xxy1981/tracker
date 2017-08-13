@@ -44,10 +44,8 @@
 	    	<table class="table-list">
 	    		<tr>
 	    			<th><input id="cb_all" type="checkbox" value="all" /></th>
-	    			<th>客户ID(点击更新)</th>
-	    			<th style="width:25%">客户名称</th>
-	    			<th style="width:20%">APP应用ID</th>
-	    			<th style="width:15%">CHN</th>
+	    			<th style="width:25%">客户ID(点击更新)</th>
+	    			<th style="width:55%">客户名称</th>
 	    			<th>创建时间</th>
 	    		</tr>
 	    		<#if list??>
@@ -56,10 +54,8 @@
 			    			<td>
 			    				<input type="checkbox" class="cb_single" id="cb_id_${partner.id}" value="${partner.id}"  action-add='true' action-del='true' />
 			    			</td>
-			    			<td><a href="${rc.contextPath}/partner/${partner.id}" target="_blank">${partner.id}</a></td>
+			    			<td><a href="${rc.contextPath}/partner/${partner.id}" >${partner.id}</a></td>
 			    			<td>${partner.name!}</td>
-			    			<td>${partner.propertyId!}</td>
-			    			<td>${partner.chn!}</td>
 			    			<td>${partner.createTime!}</td>				
 			    		</tr>
 		    		</#list>
