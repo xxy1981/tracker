@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.xxytech.tracker.entity.Campaign;
+import com.xxytech.tracker.entity.Tracker;
 import com.xxytech.tracker.http.HttpClientFactory;
 import com.xxytech.tracker.service.HttpService;
 
@@ -34,7 +35,7 @@ public class HttpServiceImpl implements HttpService{
     private boolean	httpPoolEnable;
 	
 	@Override
-	public void httpPostCall(Campaign campaign, String sid, String idfa, String o1, String clinetIp, String ua) {
+	public void httpPostCall(Campaign campaign, Tracker tracker) {
 		CloseableHttpClient httpclient = null;
 		CloseableHttpResponse response = null;
 		if(httpPoolEnable){
@@ -49,16 +50,16 @@ public class HttpServiceImpl implements HttpService{
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             
             nvps.add(new BasicNameValuePair("chn", campaign.getChannel()));
-            nvps.add(new BasicNameValuePair("sid", sid));
-            if(StringUtils.isNotBlank(idfa)){
-            	nvps.add(new BasicNameValuePair("idfa", idfa));
+            nvps.add(new BasicNameValuePair("sid", tracker.getSid()));
+            if(StringUtils.isNotBlank(tracker.getIdfa())){
+            	nvps.add(new BasicNameValuePair("idfa", tracker.getIdfa()));
             }else{
-            	nvps.add(new BasicNameValuePair("androidid_sha1", o1));
+            	nvps.add(new BasicNameValuePair("androidid_sha1", tracker.getO1()));
             }
             nvps.add(new BasicNameValuePair("action", "none"));	
-            nvps.add(new BasicNameValuePair("clicktime", String.valueOf(System.currentTimeMillis())));
-            nvps.add(new BasicNameValuePair("ip", clinetIp));
-            nvps.add(new BasicNameValuePair("useragent", ua));
+            nvps.add(new BasicNameValuePair("clicktime", String.valueOf(tracker.getCreateTime().getTime())));
+            nvps.add(new BasicNameValuePair("ip", tracker.getIp()));
+            nvps.add(new BasicNameValuePair("useragent", tracker.getUa()));
             
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             response = httpclient.execute(httpPost);
@@ -66,13 +67,13 @@ public class HttpServiceImpl implements HttpService{
             int statusCode = response.getStatusLine().getStatusCode();
             if (200 == statusCode) {
                 logger.info("###################### Successful call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
-                		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
+                		campaign.getChannel(), tracker.getIdfa(), tracker.getSid(), tracker.getIp(), campaign.getThirdUrl(), tracker.getUa(), statusCode, content);
             } else {
                 logger.error("###################### Failed call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
-                		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
+                		campaign.getChannel(), tracker.getIdfa(), tracker.getSid(), tracker.getIp(), campaign.getThirdUrl(), tracker.getUa(), statusCode, content);
             }
         } catch (Exception e) {
-            logger.error("###################### Failed call chn[" + campaign.getChannel() + "], idfa[" + idfa + "], sid[" + sid + "], ip[" + clinetIp + "], url[" + campaign.getThirdUrl() + "], ua[" + ua + "]", e);
+            logger.error("###################### Failed call chn[" + campaign.getChannel() + "], idfa[" + tracker.getIdfa() + "], sid[" + tracker.getSid() + "], ip[" + tracker.getIp() + "], url[" + campaign.getThirdUrl() + "], ua[" + tracker.getUa() + "]", e);
         }finally{
         	if(response != null){
         		try {
@@ -96,7 +97,7 @@ public class HttpServiceImpl implements HttpService{
 	}
 	
 	@Override
-	public void httpGetCall(Campaign campaign, String sid, String idfa, String o1, String clinetIp, String ua) {
+	public void httpGetCall(Campaign campaign, Tracker tracker) {
 		CloseableHttpClient httpclient = null;
 		CloseableHttpResponse response = null;
 		if(httpPoolEnable){
@@ -106,17 +107,17 @@ public class HttpServiceImpl implements HttpService{
 		}
 
         try {
-        	StringBuffer ulr = new StringBuffer(campaign.getThirdUrl()).append("?chn=").append(campaign.getChannel());
-        	ulr.append("&sid=").append(sid);
-        	if(StringUtils.isNotBlank(idfa)){
-        		ulr.append("&idfa=").append(idfa);
+        	StringBuffer ulr = new StringBuffer(campaign.getThirdUrl()).append("?action=none");
+        	ulr.append("&chn=").append(campaign.getChannel());
+        	ulr.append("&sid=").append(tracker.getSid());
+        	if(StringUtils.isNotBlank(tracker.getIdfa())){
+        		ulr.append("&idfa=").append(tracker.getIdfa());
             }else{
-            	ulr.append("&androidid_sha1=").append(o1);
+            	ulr.append("&androidid_sha1=").append(tracker.getO1());
             }
-        	ulr.append("&action=").append("none");
-        	ulr.append("&clicktime=").append(String.valueOf(System.currentTimeMillis()));
-        	ulr.append("&ip=").append(clinetIp);
-        	ulr.append("&useragent=").append(URLEncoder.encode(ua, "UTF-8"));
+        	ulr.append("&clicktime=").append(String.valueOf(tracker.getCreateTime().getTime()));
+        	ulr.append("&ip=").append(tracker.getIp());
+        	ulr.append("&useragent=").append(URLEncoder.encode(tracker.getUa(), "UTF-8"));
         	
         	logger.warn("###################### Send url[{}]", ulr.toString());
         	
@@ -126,13 +127,13 @@ public class HttpServiceImpl implements HttpService{
             int statusCode = response.getStatusLine().getStatusCode();
             if (200 == statusCode) {
                 logger.info("###################### Successful call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
-                		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
+                        campaign.getChannel(), tracker.getIdfa(), tracker.getSid(), tracker.getIp(), campaign.getThirdUrl(), tracker.getUa(), statusCode, content);
             } else {
                 logger.error("###################### Failed call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
-                		campaign.getChannel(), idfa, sid, clinetIp, campaign.getThirdUrl(), ua, statusCode, content);
+                        campaign.getChannel(), tracker.getIdfa(), tracker.getSid(), tracker.getIp(), campaign.getThirdUrl(), tracker.getUa(), statusCode, content);
             }
         } catch (Exception e) {
-            logger.error("###################### Failed call chn[" + campaign.getChannel() + "], idfa[" + idfa + "], sid[" + sid + "], ip[" + clinetIp + "], url[" + campaign.getThirdUrl() + "], ua[" + ua + "]", e);
+            logger.error("###################### Failed call chn[" + campaign.getChannel() + "], idfa[" + tracker.getIdfa() + "], sid[" + tracker.getSid() + "], ip[" + tracker.getIp() + "], url[" + campaign.getThirdUrl() + "], ua[" + tracker.getUa() + "]", e);
         }finally{
         	if(response != null){
         		try {
@@ -156,7 +157,7 @@ public class HttpServiceImpl implements HttpService{
 	}
 
 	@Override
-	public void activeFeeback(Campaign campaign, String status, String message, Integer code) {
+	public void activeCallbackFeeback(Campaign campaign, String status, String message, Integer code) {
 		JSONObject j = new JSONObject();  
         j.put("status", status);  
         j.put("message", message);

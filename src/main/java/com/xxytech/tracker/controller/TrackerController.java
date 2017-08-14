@@ -17,7 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -88,47 +87,23 @@ public class TrackerController extends AbstractController {
                        	//@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
                        	@RequestParam(value = "ip", defaultValue="", required = false) String ip,
                         @RequestParam(value = "ua", defaultValue="", required = false) String ua,
+                        @RequestParam(value = "clickTime", defaultValue="", required = false) String clickTime,
                        	HttpServletRequest httpRequest,
                        	HttpServletResponse httpResponse
                       	) {
-
-    	String clinetIp = getIpAddr(httpRequest);
-    	String userAgent = getUserAgent(httpRequest);
-
     	Campaign campaign = campaignService.getCampaign(campaignId);
     	if(campaign == null){
     	    return new GeneralResponse("ko", "related campaign record not found", HttpStatus.NOT_FOUND.value());
     	}
-        
+    	
+    	Tracker tracker = saveTracker(campaign, sid, idfa, o1, subChn, ip, ua, clickTime, httpRequest);
+    	
     	try {
-    	    httpService.httpGetCall(campaign, idfa, sid, o1, StringUtils.isBlank(ip) ? clinetIp : ip, StringUtils.isBlank(ua) ? userAgent : ua);
+    	    httpService.httpGetCall(campaign, tracker);
         } catch (Exception e) {
             logger.error(e.getMessage());
             return new GeneralResponse("ko", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
-    	
-    	try {
-			Tracker tracker = new Tracker();
-			tracker.setSid(sid);
-			tracker.setIdfa(idfa);
-			tracker.setO1(o1);
-			tracker.setCampaignId(campaignId);
-			tracker.setChannel(campaign.getChannel());
-			tracker.setSubChannel(subChn);
-			tracker.setIp(ip == null ? clinetIp : ip);
-			tracker.setUa(ua == null ? userAgent : ua);
-			tracker.setPartnerId(campaign.getPartnerId());
-			tracker.setCreateTime(new Date());
-			if(StringUtils.isNotBlank(idfa)){
-				tracker.setDeviceType(DeviceType.IOS.name());
-			}else{
-				tracker.setDeviceType(DeviceType.ANDROID.name());
-			}
-			
-			trackerService.save(tracker);
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		}
         
     	return new GeneralResponse("ok", null, HttpStatus.OK.value());
     }
@@ -145,47 +120,23 @@ public class TrackerController extends AbstractController {
                         //@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
                         @RequestParam(value = "ip", defaultValue="", required = false) String ip,
                         @RequestParam(value = "ua", defaultValue="", required = false) String ua,
+                        @RequestParam(value = "clickTime", defaultValue="0", required = false) String clickTime,
                        	HttpServletRequest httpRequest,
                        	HttpServletResponse httpResponse
                       	) {
-
-    	String clinetIp = getIpAddr(httpRequest);
-    	String userAgent = getUserAgent(httpRequest);
-
     	Campaign campaign = campaignService.getCampaign(campaignId);
     	if(campaign == null){
     	    return new GeneralResponse("ko", "related campaign record not found", HttpStatus.NOT_FOUND.value());
     	}
         
+    	Tracker tracker = saveTracker(campaign, sid, idfa, o1, subChn, ip, ua, clickTime, httpRequest);
+    	
     	try {
-            httpService.httpGetCall(campaign, idfa, sid, o1, StringUtils.isBlank(ip) ? clinetIp : ip, StringUtils.isBlank(ua) ? userAgent : ua);
+            httpService.httpGetCall(campaign, tracker);
         } catch (Exception e) {
             logger.error(e.getMessage());
             return new GeneralResponse("ko", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
-    	
-    	try {
-			Tracker tracker = new Tracker();
-			tracker.setSid(sid);
-			tracker.setIdfa(idfa);
-			tracker.setO1(o1);
-			tracker.setCampaignId(campaignId);
-			tracker.setChannel(campaign.getChannel());
-			tracker.setSubChannel(subChn);
-			tracker.setIp(ip == null ? clinetIp : ip);
-			tracker.setUa(ua == null ? userAgent : ua);
-			tracker.setPartnerId(campaign.getPartnerId());
-			tracker.setCreateTime(new Date());
-			if(StringUtils.isNotBlank(idfa)){
-				tracker.setDeviceType(DeviceType.IOS.name());
-			}else{
-				tracker.setDeviceType(DeviceType.ANDROID.name());
-			}
-			
-			trackerService.save(tracker);
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		}
         
     	return new GeneralResponse("ok", null, HttpStatus.OK.value());
     }
@@ -197,45 +148,71 @@ public class TrackerController extends AbstractController {
 							@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
 							@RequestParam(value = "o1", defaultValue="", required = false) String o1,
 							@RequestParam(value = "subChn", defaultValue="", required = false) String subChn,
-							@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
-							@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
+	                        //@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
+	                        //@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
+	                        @RequestParam(value = "ip", defaultValue="", required = false) String ip,
+	                        @RequestParam(value = "ua", defaultValue="", required = false) String ua,
+	                        @RequestParam(value = "clickTime", defaultValue="0", required = false) String clickTime,
 							HttpServletRequest httpRequest,
 							HttpServletResponse httpResponse
-          	) {
-
-		String clinetIp = getIpAddr(httpRequest);
-		String userAgent = getUserAgent(httpRequest);
-		
+          	                ) {
 		Campaign campaign = campaignService.getCampaign(campaignId);
 		if(campaign == null){
 			return "ko";
 		}
 		
-		httpService.httpGetCall(campaign, idfa, sid, o1, ip == null ? clinetIp : ip, ua == null ? userAgent : ua);
-		
-		try {
-			Tracker tracker = new Tracker();
-			tracker.setSid(sid);
-			tracker.setIdfa(idfa);
-			tracker.setO1(o1);
-			tracker.setCampaignId(campaignId);
-			tracker.setChannel(campaign.getChannel());
-			tracker.setSubChannel(subChn);
-			tracker.setIp(ip == null ? clinetIp : ip);
-			tracker.setUa(ua == null ? userAgent : ua);
-			tracker.setPartnerId(campaign.getPartnerId());
-			tracker.setCreateTime(new Date());
-			if(StringUtils.isNotBlank(idfa)){
-				tracker.setDeviceType(DeviceType.IOS.name());
-			}else{
-				tracker.setDeviceType(DeviceType.ANDROID.name());
-			}
-		
-			trackerService.save(tracker);
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		}
+		Tracker tracker = saveTracker(campaign, sid, idfa, o1, subChn, ip, ua, clickTime, httpRequest);
+        
+        httpService.httpGetCall(campaign, tracker);
 	        
 	    return "redirect:/tracker";
 	}
+
+    /**
+     * 保存点击记录
+     * @param campaign
+     * @param sid
+     * @param idfa
+     * @param o1
+     * @param subChn
+     * @param ip
+     * @param ua
+     * @param clickTime
+     * @param httpRequest
+     */
+    private Tracker saveTracker(Campaign campaign, String sid, String idfa, String o1, String subChn, String ip, String ua,
+                             String clickTime, HttpServletRequest httpRequest) {
+        try {
+            String clinetIp = getIpAddr(httpRequest);
+            String userAgent = getUserAgent(httpRequest);
+            
+            Tracker tracker = new Tracker();
+            tracker.setSid(sid);
+            tracker.setIdfa(idfa);
+            tracker.setO1(o1);
+            tracker.setCampaignId(campaign.getId());
+            tracker.setChannel(campaign.getChannel());
+            tracker.setSubChannel(subChn);
+            tracker.setIp(StringUtils.isBlank(ip) ? clinetIp : ip);
+            tracker.setUa(StringUtils.isBlank(ua) ? userAgent : ua);
+            tracker.setPartnerId(campaign.getPartnerId());
+            try {
+                tracker.setCreateTime(new Date(Long.valueOf(clickTime)));
+            } catch (Exception e) {
+                tracker.setCreateTime(new Date());
+            }
+            if(StringUtils.isNotBlank(idfa)){
+                tracker.setDeviceType(DeviceType.IOS.name());
+            }else{
+                tracker.setDeviceType(DeviceType.ANDROID.name());
+            }
+            
+            trackerService.save(tracker);
+            
+            return tracker;
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return null;
+    }
 }

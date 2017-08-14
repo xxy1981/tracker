@@ -27,7 +27,6 @@ import com.xxytech.tracker.entity.Campaign;
 import com.xxytech.tracker.entity.Tracker;
 import com.xxytech.tracker.service.CallbackActiveService;
 import com.xxytech.tracker.service.CampaignService;
-import com.xxytech.tracker.service.HttpService;
 import com.xxytech.tracker.service.PartnerService;
 import com.xxytech.tracker.service.TrackerService;
 import com.xxytech.tracker.utils.GeneralResponse;
@@ -42,8 +41,6 @@ public class CallbackActiveController extends AbstractController {
     private PartnerService partnerService;
     @Autowired
     private CallbackActiveService callbackActiveService;
-    @Autowired
-    private HttpService httpService;
     @Autowired
     private TrackerService trackerService;
     @Autowired
@@ -80,12 +77,12 @@ public class CallbackActiveController extends AbstractController {
     public GeneralResponse serve(@RequestParam(value = "sid", defaultValue="", required = true) String sid,
                        	@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
                        	@RequestParam(value = "o1", defaultValue="", required = false) String o1,
+                        @RequestParam(value = "ip", defaultValue="", required = false) String ip,
+                        @RequestParam(value = "ua", defaultValue="", required = false) String ua,
+                        @RequestParam(value = "activeTime", defaultValue="0", required = false) Long activeTime,
                        	@RequestParam(value = "view_attributed", defaultValue="", required = false) String viewAttributed,
                        	@RequestParam(value = "partnerId", defaultValue="", required = false) String partnerId,
                        	@RequestParam(value = "appId", defaultValue="", required = false) String appId,
-                       	@RequestParam(value = "ip", defaultValue="", required = false) String ip,
-                        @RequestParam(value = "ua", defaultValue="", required = false) String ua,
-                       	@RequestParam(value = "activeTime", defaultValue="0", required = false) Long activeTime,
                        	HttpServletRequest httpRequest,
                        	HttpServletResponse httpResponse
                       	) {
@@ -104,7 +101,14 @@ public class CallbackActiveController extends AbstractController {
     	    return new GeneralResponse("ko", "related record not found", HttpStatus.NOT_FOUND.value());
     	}
     	
-    	try {
+    	saveCallbackActive(sid, idfa, o1, ip, ua, activeTime, viewAttributed, tracker, campaign);
+    	
+    	return new GeneralResponse("ok", null, HttpStatus.OK.value());
+    }
+
+    private void saveCallbackActive(String sid, String idfa, String o1, String ip, String ua, Long activeTime,
+                                    String viewAttributed, Tracker tracker, Campaign campaign) {
+        try {
     		CallbackActivate callbackActive = new CallbackActivate();
     		callbackActive.setSid(sid);
     		
@@ -145,9 +149,5 @@ public class CallbackActiveController extends AbstractController {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
-    	
-    	httpService.activeFeeback(campaign, "OK", "success", 200);
-        
-    	return new GeneralResponse("ok", null, HttpStatus.OK.value());
     }
 }

@@ -1,11 +1,12 @@
 package com.xxytech.tracker.service;
 
 import com.xxytech.tracker.entity.Campaign;
+import com.xxytech.tracker.entity.Tracker;
 
 public interface HttpService {
-	void httpPostCall(Campaign campaign, String sid, String idfa, String o1, String clinetIp, String ua);
+	void httpPostCall(Campaign campaign, Tracker tracker);
 	
-	void httpGetCall(Campaign campaign, String sid, String idfa, String o1, String clinetIp, String ua);
+	void httpGetCall(Campaign campaign, Tracker tracker);
 	
-	void activeFeeback(Campaign campaign, String status, String message, Integer code);
+	void activeCallbackFeeback(Campaign campaign, String status, String message, Integer code);
 }
