@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,6 +31,7 @@ import com.xxytech.tracker.service.CampaignService;
 import com.xxytech.tracker.service.HttpService;
 import com.xxytech.tracker.service.PartnerService;
 import com.xxytech.tracker.service.TrackerService;
+import com.xxytech.tracker.utils.GeneralResponse;
 import com.xxytech.tracker.utils.PageHtmlDisplay;
 
 @Controller
@@ -76,14 +78,16 @@ public class TrackerController extends AbstractController {
     
     @RequestMapping(value = "/{campaignId}")
     @ResponseBody
-    public String serveAuto(@PathVariable(value = "campaignId", required = true) String campaignId,
+    public GeneralResponse serveAuto(@PathVariable(value = "campaignId", required = true) String campaignId,
            				@RequestParam(value = "action", defaultValue="click", required = false) String action,
            				@RequestParam(value = "sid", defaultValue="", required = false) String sid,
                        	@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
                        	@RequestParam(value = "o1", defaultValue="", required = false) String o1,
                        	@RequestParam(value = "subChn", defaultValue="", required = false) String subChn,
-                       	@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
-                       	@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
+                       	//@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
+                       	//@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
+                       	@RequestParam(value = "ip", defaultValue="", required = false) String ip,
+                        @RequestParam(value = "ua", defaultValue="", required = false) String ua,
                        	HttpServletRequest httpRequest,
                        	HttpServletResponse httpResponse
                       	) {
@@ -93,10 +97,15 @@ public class TrackerController extends AbstractController {
 
     	Campaign campaign = campaignService.getCampaign(campaignId);
     	if(campaign == null){
-    		return "ko";
+    	    return new GeneralResponse("ko", "related campaign record not found", HttpStatus.NOT_FOUND.value());
     	}
         
-    	httpService.httpGetCall(campaign, idfa, sid, o1, ip == null ? clinetIp : ip, ua == null ? userAgent : ua);
+    	try {
+    	    httpService.httpGetCall(campaign, idfa, sid, o1, StringUtils.isBlank(ip) ? clinetIp : ip, StringUtils.isBlank(ua) ? userAgent : ua);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return new GeneralResponse("ko", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
     	
     	try {
 			Tracker tracker = new Tracker();
@@ -121,19 +130,21 @@ public class TrackerController extends AbstractController {
 			logger.error(e.getMessage());
 		}
         
-        return "ok";
+    	return new GeneralResponse("ok", null, HttpStatus.OK.value());
     }
     
     @RequestMapping(value = "/serve")
     @ResponseBody
-    public String serve(@RequestParam(value = "campaignId", defaultValue="", required = false) String campaignId,
+    public GeneralResponse serve(@RequestParam(value = "campaignId", defaultValue="", required = false) String campaignId,
     					@RequestParam(value = "action", defaultValue="click", required = false) String action,
            				@RequestParam(value = "sid", defaultValue="", required = false) String sid,
                        	@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
                        	@RequestParam(value = "o1", defaultValue="", required = false) String o1,
                        	@RequestParam(value = "subChn", defaultValue="", required = false) String subChn,
-                       	@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
-                       	@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
+                       	//@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
+                        //@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
+                        @RequestParam(value = "ip", defaultValue="", required = false) String ip,
+                        @RequestParam(value = "ua", defaultValue="", required = false) String ua,
                        	HttpServletRequest httpRequest,
                        	HttpServletResponse httpResponse
                       	) {
@@ -143,10 +154,15 @@ public class TrackerController extends AbstractController {
 
     	Campaign campaign = campaignService.getCampaign(campaignId);
     	if(campaign == null){
-    		return "ko";
+    	    return new GeneralResponse("ko", "related campaign record not found", HttpStatus.NOT_FOUND.value());
     	}
         
-    	httpService.httpGetCall(campaign, idfa, sid, o1, ip == null ? clinetIp : ip, ua == null ? userAgent : ua);
+    	try {
+            httpService.httpGetCall(campaign, idfa, sid, o1, StringUtils.isBlank(ip) ? clinetIp : ip, StringUtils.isBlank(ua) ? userAgent : ua);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return new GeneralResponse("ko", e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        }
     	
     	try {
 			Tracker tracker = new Tracker();
@@ -171,7 +187,7 @@ public class TrackerController extends AbstractController {
 			logger.error(e.getMessage());
 		}
         
-        return "ok";
+    	return new GeneralResponse("ok", null, HttpStatus.OK.value());
     }
     
     @RequestMapping(value = "/serveTest")

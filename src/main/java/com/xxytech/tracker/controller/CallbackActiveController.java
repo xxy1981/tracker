@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +30,7 @@ import com.xxytech.tracker.service.CampaignService;
 import com.xxytech.tracker.service.HttpService;
 import com.xxytech.tracker.service.PartnerService;
 import com.xxytech.tracker.service.TrackerService;
+import com.xxytech.tracker.utils.GeneralResponse;
 import com.xxytech.tracker.utils.PageHtmlDisplay;
 
 @Controller
@@ -75,13 +77,14 @@ public class CallbackActiveController extends AbstractController {
     
     @RequestMapping(value = "/active")
     @ResponseBody
-    public String serve(@RequestParam(value = "sid", defaultValue="", required = true) String sid,
+    public GeneralResponse serve(@RequestParam(value = "sid", defaultValue="", required = true) String sid,
                        	@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
                        	@RequestParam(value = "o1", defaultValue="", required = false) String o1,
                        	@RequestParam(value = "view_attributed", defaultValue="", required = false) String viewAttributed,
                        	@RequestParam(value = "partnerId", defaultValue="", required = false) String partnerId,
                        	@RequestParam(value = "appId", defaultValue="", required = false) String appId,
                        	@RequestParam(value = "ip", defaultValue="", required = false) String ip,
+                        @RequestParam(value = "ua", defaultValue="", required = false) String ua,
                        	@RequestParam(value = "activeTime", defaultValue="0", required = false) Long activeTime,
                        	HttpServletRequest httpRequest,
                        	HttpServletResponse httpResponse
@@ -90,15 +93,15 @@ public class CallbackActiveController extends AbstractController {
     	
     	if(StringUtils.isBlank(sid)){
     		//httpService.activeFeeback(null, "BAD_REQUEST", "paramter 'sid' missing", 1000);
-    		return "ko";
+    		return new GeneralResponse("ko", "BAD_REQUEST:paramter 'sid' missing", HttpStatus.BAD_REQUEST.value());
     	}
     	Tracker tracker = trackerService.getTracker(sid);
     	if(tracker == null){
-    		return "ko";
+    	    return new GeneralResponse("ko", "related record not found", HttpStatus.NOT_FOUND.value());
     	}
     	Campaign campaign = campaignService.getCampaign(tracker.getCampaignId());
     	if(campaign == null){
-    		return "ko";
+    	    return new GeneralResponse("ko", "related record not found", HttpStatus.NOT_FOUND.value());
     	}
     	
     	try {
@@ -122,6 +125,12 @@ public class CallbackActiveController extends AbstractController {
     		}else{
     			callbackActive.setIp(tracker.getIp());
     		}
+    		
+    		if(StringUtils.isNotBlank(ua)){
+                callbackActive.setUa(ua);
+            }else{
+                callbackActive.setUa(tracker.getUa());
+            }
     		callbackActive.setPartnerId(tracker.getPartnerId());
     		callbackActive.setAppId(campaign.getAppId());
     		callbackActive.setViewAttributed(viewAttributed);
@@ -139,6 +148,6 @@ public class CallbackActiveController extends AbstractController {
     	
     	httpService.activeFeeback(campaign, "OK", "success", 200);
         
-        return "ok";
+    	return new GeneralResponse("ok", null, HttpStatus.OK.value());
     }
 }
