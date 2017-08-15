@@ -86,10 +86,9 @@ public class CallbackActiveController extends AbstractController {
                        	HttpServletRequest httpRequest,
                        	HttpServletResponse httpResponse
                       	) {
-    	logRequestParameter("Active Callback data", httpRequest);
+    	logRequestParameter("###################### Active Callback data", httpRequest);
     	
     	if(StringUtils.isBlank(sid)){
-    		//httpService.activeFeeback(null, "BAD_REQUEST", "paramter 'sid' missing", 1000);
     		return new GeneralResponse("ko", "BAD_REQUEST:paramter 'sid' missing", HttpStatus.BAD_REQUEST.value());
     	}
     	Tracker tracker = trackerService.getTracker(sid);
@@ -101,13 +100,13 @@ public class CallbackActiveController extends AbstractController {
     	    return new GeneralResponse("ko", "related record not found", HttpStatus.NOT_FOUND.value());
     	}
     	
-    	saveCallbackActive(sid, idfa, o1, ip, ua, activeTime, viewAttributed, tracker, campaign);
+    	saveCallbackActive(sid, idfa, o1, ip, ua, activeTime, viewAttributed, partnerId, appId, tracker, campaign);
     	
     	return new GeneralResponse("ok", null, HttpStatus.OK.value());
     }
 
     private void saveCallbackActive(String sid, String idfa, String o1, String ip, String ua, Long activeTime,
-                                    String viewAttributed, Tracker tracker, Campaign campaign) {
+                                    String viewAttributed, String partnerId, String appId, Tracker tracker, Campaign campaign) {
         try {
     		CallbackActivate callbackActive = new CallbackActivate();
     		callbackActive.setSid(sid);
@@ -135,15 +134,26 @@ public class CallbackActiveController extends AbstractController {
             }else{
                 callbackActive.setUa(tracker.getUa());
             }
-    		callbackActive.setPartnerId(tracker.getPartnerId());
-    		callbackActive.setAppId(campaign.getAppId());
-    		callbackActive.setViewAttributed(viewAttributed);
+            
+            if(activeTime != null && activeTime != 0){
+                callbackActive.setCreateTime(new Date(activeTime));
+            }else{
+                callbackActive.setCreateTime(new Date());
+            }
+            
+            callbackActive.setViewAttributed(viewAttributed);
+            
+            if(StringUtils.isNotBlank(partnerId)){
+                callbackActive.setPartnerId(partnerId);
+            }else{
+                callbackActive.setPartnerId(tracker.getPartnerId());
+            }
     		
-    		if(activeTime != null && activeTime != 0){
-    			callbackActive.setCreateTime(new Date(activeTime));
-    		}else{
-    			callbackActive.setCreateTime(new Date());
-    		}
+    		if(StringUtils.isNotBlank(appId)){
+                callbackActive.setAppId(appId);
+            }else{
+                callbackActive.setAppId(campaign.getAppId());
+            }
 			
 			callbackActiveService.save(callbackActive);
 		} catch (Exception e) {

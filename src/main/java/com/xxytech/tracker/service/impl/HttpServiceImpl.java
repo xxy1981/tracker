@@ -1,6 +1,7 @@
 package com.xxytech.tracker.service.impl;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -25,14 +26,24 @@ import com.alibaba.fastjson.JSONObject;
 import com.xxytech.tracker.entity.Campaign;
 import com.xxytech.tracker.entity.Tracker;
 import com.xxytech.tracker.http.HttpClientFactory;
+import com.xxytech.tracker.http.OkHttpFactory;
 import com.xxytech.tracker.service.HttpService;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 @Service("httpService")
 public class HttpServiceImpl implements HttpService{
 	private static final Logger logger = LoggerFactory.getLogger(HttpServiceImpl.class);
 	
-	@Value("${httpclinet.pool.enable:true}")
+	private static final String HTTP_CHANNEL_OK_HTTP = "okhttp";
+	private static final String HTTP_CHANNEL_HTTP_CLIENT = "httpclient";
+	
+	@Value("${http.pool.enable:true}")
     private boolean	httpPoolEnable;
+	@Value("${http.channel:okhttp}")
+    private String httpChannel;
 	
 	@Override
 	public void httpPostCall(Campaign campaign, Tracker tracker) {
@@ -98,62 +109,11 @@ public class HttpServiceImpl implements HttpService{
 	
 	@Override
 	public void httpGetCall(Campaign campaign, Tracker tracker) {
-		CloseableHttpClient httpclient = null;
-		CloseableHttpResponse response = null;
-		if(httpPoolEnable){
-			httpclient = HttpClientFactory.getHttpClient(null); 
+		if(HTTP_CHANNEL_OK_HTTP.equalsIgnoreCase(httpChannel)){
+		    httpGetCallByOkHttp(campaign, tracker);
 		}else{
-			httpclient = HttpClientFactory.getNewHttpClient(null);
+		    httpGetCallByHttpClient(campaign, tracker);
 		}
-
-        try {
-        	StringBuffer ulr = new StringBuffer(campaign.getThirdUrl()).append("?action=none");
-        	ulr.append("&chn=").append(campaign.getChannel());
-        	ulr.append("&sid=").append(tracker.getSid());
-        	if(StringUtils.isNotBlank(tracker.getIdfa())){
-        		ulr.append("&idfa=").append(tracker.getIdfa());
-            }else{
-            	ulr.append("&androidid_sha1=").append(tracker.getO1());
-            }
-        	ulr.append("&clicktime=").append(String.valueOf(tracker.getCreateTime().getTime()));
-        	ulr.append("&ip=").append(tracker.getIp());
-        	ulr.append("&useragent=").append(URLEncoder.encode(tracker.getUa(), "UTF-8"));
-        	
-        	logger.warn("###################### Send url[{}]", ulr.toString());
-        	
-        	HttpGet httpGet = new HttpGet(ulr.toString());//https://lnk0.com/URhcE9?chn=Inmobi&idfa=$IDA&sid=$SID&ip=$USER_IP
-        	response = httpclient.execute(httpGet);
-            String content = IOUtils.toString(response.getEntity().getContent());
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (200 == statusCode) {
-                logger.info("###################### Successful call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
-                        campaign.getChannel(), tracker.getIdfa(), tracker.getSid(), tracker.getIp(), campaign.getThirdUrl(), tracker.getUa(), statusCode, content);
-            } else {
-                logger.error("###################### Failed call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
-                        campaign.getChannel(), tracker.getIdfa(), tracker.getSid(), tracker.getIp(), campaign.getThirdUrl(), tracker.getUa(), statusCode, content);
-            }
-        } catch (Exception e) {
-            logger.error("###################### Failed call chn[" + campaign.getChannel() + "], idfa[" + tracker.getIdfa() + "], sid[" + tracker.getSid() + "], ip[" + tracker.getIp() + "], url[" + campaign.getThirdUrl() + "], ua[" + tracker.getUa() + "]", e);
-        }finally{
-        	if(response != null){
-        		try {
-        			response.close();
-				} catch (IOException e) {
-					logger.error("release(close) httpclient'response error :", e);
-				}
-        	}
-
-            //没使用连接池的时候每次关掉client，使用连接池的时候不能关闭
-        	if(!httpPoolEnable){
-        		if(httpclient != null){
-            		try {
-                		httpclient.close();
-        			} catch (IOException e) {
-        				logger.error("release(close) httpclient error :", e);
-        			}
-        		}
-        	}
-        }
 	}
 
 	@Override
@@ -213,5 +173,102 @@ public class HttpServiceImpl implements HttpService{
         }
 		
 	}
+
+    private void httpGetCallByOkHttp(Campaign campaign, Tracker tracker) {
+        String ulr = buildGetUrl(campaign, tracker);
+        
+        OkHttpClient okHttpClient;
+        if(httpPoolEnable){
+            okHttpClient = OkHttpFactory.getOkHttpClient();
+        }else{
+            okHttpClient = OkHttpFactory.getNewOkHttpClient();
+        }
+        
+        Request request = new Request.Builder().url(ulr).addHeader("Connection", "close").build();
+        try (Response response = okHttpClient.newCall(request).execute()) {
+            String content = response.body().string();
+            if(response.isSuccessful()){
+                logger.info("###################### Successful call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
+                        campaign.getChannel(), tracker.getIdfa(), tracker.getSid(), tracker.getIp(), campaign.getThirdUrl(), tracker.getUa(), response.code(), content);
+            } else {
+                logger.error("###################### Failed call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
+                        campaign.getChannel(), tracker.getIdfa(), tracker.getSid(), tracker.getIp(), campaign.getThirdUrl(), tracker.getUa(), response.code(), content);
+            }
+        } catch (IOException e) {
+            logger.error("###################### Failed call chn[" + campaign.getChannel() + "], idfa[" + tracker.getIdfa() + "], sid[" + tracker.getSid() + "], ip[" + tracker.getIp() + "], url[" + campaign.getThirdUrl() + "], ua[" + tracker.getUa() + "]", e);
+        }
+    }
+    
+    private void httpGetCallByHttpClient(Campaign campaign, Tracker tracker) {
+        CloseableHttpClient httpclient = null;
+        CloseableHttpResponse response = null;
+        if(httpPoolEnable){
+            httpclient = HttpClientFactory.getHttpClient(null); 
+        }else{
+            httpclient = HttpClientFactory.getNewHttpClient(null);
+        }
+
+        try {
+            String ulr = buildGetUrl(campaign, tracker);
+            HttpGet httpGet = new HttpGet(ulr);//https://lnk0.com/URhcE9?chn=Inmobi&idfa=$IDA&sid=$SID&ip=$USER_IP
+            response = httpclient.execute(httpGet);
+            String content = IOUtils.toString(response.getEntity().getContent());
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (200 == statusCode) {
+                logger.info("###################### Successful call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
+                        campaign.getChannel(), tracker.getIdfa(), tracker.getSid(), tracker.getIp(), campaign.getThirdUrl(), tracker.getUa(), statusCode, content);
+            } else {
+                logger.error("###################### Failed call chn[{}], idfa[{}], sid[{}], ip[{}], url[{}], ua[{}], http status is [{}], return content is\r\n{}", 
+                        campaign.getChannel(), tracker.getIdfa(), tracker.getSid(), tracker.getIp(), campaign.getThirdUrl(), tracker.getUa(), statusCode, content);
+            }
+        } catch (Exception e) {
+            logger.error("###################### Failed call chn[" + campaign.getChannel() + "], idfa[" + tracker.getIdfa() + "], sid[" + tracker.getSid() + "], ip[" + tracker.getIp() + "], url[" + campaign.getThirdUrl() + "], ua[" + tracker.getUa() + "]", e);
+        }finally{
+            if(response != null){
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    logger.error("release(close) httpclient'response error :", e);
+                }
+            }
+
+            //没使用连接池的时候每次关掉client，使用连接池的时候不能关闭
+            if(!httpPoolEnable){
+                if(httpclient != null){
+                    try {
+                        httpclient.close();
+                    } catch (IOException e) {
+                        logger.error("release(close) httpclient error :", e);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 构件
+     * @param campaign
+     * @param tracker
+     * @return
+     */
+    private String buildGetUrl(Campaign campaign, Tracker tracker) {
+        StringBuffer ulr = new StringBuffer(campaign.getThirdUrl()).append("?action=none");
+        ulr.append("&chn=").append(campaign.getChannel());
+        ulr.append("&sid=").append(tracker.getSid());
+        if(StringUtils.isNotBlank(tracker.getIdfa())){
+            ulr.append("&idfa=").append(tracker.getIdfa());
+        }else{
+            ulr.append("&androidid_sha1=").append(tracker.getO1());
+        }
+        ulr.append("&clicktime=").append(String.valueOf(tracker.getCreateTime().getTime()));
+        ulr.append("&ip=").append(tracker.getIp());
+        try {
+            ulr.append("&useragent=").append(URLEncoder.encode(tracker.getUa(), "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        logger.warn("###################### Send url[{}]", ulr.toString());
+        return ulr.toString();
+    }
 
 }

@@ -3,7 +3,6 @@ package com.xxytech.tracker.service.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -17,9 +16,6 @@ import com.xxytech.tracker.service.TrackerService;
 @Service("trackerService")
 public class TrackerServiceImpl implements TrackerService{
 	private static final Logger logger = LoggerFactory.getLogger(TrackerServiceImpl.class);
-	
-	@Value("${httpclinet.pool.enable:true}")
-    private boolean	httpPoolEnable;
 	
 	@Autowired
     private TrackerRepository trackerRepository;
