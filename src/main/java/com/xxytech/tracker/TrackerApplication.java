@@ -2,8 +2,10 @@ package com.xxytech.tracker;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 
 @SpringBootApplication
+@ServletComponentScan
 public class TrackerApplication {
 
 	public static void main(String[] args) {

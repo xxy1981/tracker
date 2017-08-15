@@ -3,8 +3,8 @@ package com.xxytech.tracker.utils;
 public class GeneralResponse {
 
     private int             status;
-    private String             message;
-    private String             code;
+    private String          message;
+    private String          code;
 
     public GeneralResponse() {
     }
