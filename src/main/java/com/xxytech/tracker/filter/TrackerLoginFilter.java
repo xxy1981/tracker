@@ -38,7 +38,6 @@ public class TrackerLoginFilter extends GenericFilterBean {
             }
         }
         
-        logger.debug("doFilter... is login:" + loginUser);
         chain.doFilter(request, response);
         return;
     }
