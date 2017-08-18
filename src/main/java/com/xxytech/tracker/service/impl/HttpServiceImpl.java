@@ -184,7 +184,11 @@ public class HttpServiceImpl implements HttpService{
             okHttpClient = OkHttpFactory.getNewOkHttpClient();
         }
         
-        Request request = new Request.Builder().url(ulr).addHeader("Connection", "close").build();
+        Request request = new Request.Builder().url(ulr)
+                .addHeader("Connection", "close")
+                .addHeader("User-Agent", tracker.getUa())
+                .addHeader("X-Forwarded-For", tracker.getIp())
+                .build();
         try (Response response = okHttpClient.newCall(request).execute()) {
             String content = response.body().string();
             if(response.isSuccessful()){
@@ -211,6 +215,8 @@ public class HttpServiceImpl implements HttpService{
         try {
             String ulr = buildGetUrl(campaign, tracker);
             HttpGet httpGet = new HttpGet(ulr);//https://lnk0.com/URhcE9?chn=Inmobi&idfa=$IDA&sid=$SID&ip=$USER_IP
+            httpGet.setHeader("User-Agent", tracker.getUa());
+            httpGet.setHeader("X-Forwarded-For", tracker.getIp());
             response = httpclient.execute(httpGet);
             String content = IOUtils.toString(response.getEntity().getContent());
             int statusCode = response.getStatusLine().getStatusCode();
