@@ -44,7 +44,7 @@
 	    		<tr>
 	    			<th style="width:20%">流水号</th>
 	    			<th style="width:20%">ISO设备ID</th>
-	    			<th style="width:20%">Android设备ID</th>
+	    			<th style="width:20%">Android设备ID（SHA-1）</th>
 	    			<th style="width:15%">客户ID</th>
 	    			<th>APP应用ID</th>
 	    			<th>创建时间</th>
@@ -54,7 +54,7 @@
 			    		<tr>
 			    			<td>${callbackActive.sid!}</td>
 			    			<td>${callbackActive.idfa!}</td>
-			    			<td>${callbackActive.o1!}</td>
+			    			<td>${callbackActive.androidIdSha1!}</td>
 			    			<td>${callbackActive.partnerId!}</td>
 			    			<td>${callbackActive.appId!}</td>
 			    			<td>${callbackActive.createTime!}</td>				

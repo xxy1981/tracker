@@ -65,7 +65,7 @@ public class HttpServiceImpl implements HttpService{
             if(StringUtils.isNotBlank(tracker.getIdfa())){
             	nvps.add(new BasicNameValuePair("idfa", tracker.getIdfa()));
             }else{
-            	nvps.add(new BasicNameValuePair("androidid_sha1", tracker.getO1()));
+            	nvps.add(new BasicNameValuePair("androidid_sha1", tracker.getAndroidIdSha1()));
             }
             nvps.add(new BasicNameValuePair("action", "none"));	
             nvps.add(new BasicNameValuePair("clicktime", String.valueOf(tracker.getCreateTime().getTime())));
@@ -263,8 +263,12 @@ public class HttpServiceImpl implements HttpService{
         ulr.append("&sid=").append(tracker.getSid());
         if(StringUtils.isNotBlank(tracker.getIdfa())){
             ulr.append("&idfa=").append(tracker.getIdfa());
-        }else{
-            ulr.append("&androidid_sha1=").append(tracker.getO1());
+        }else if(StringUtils.isNotBlank(tracker.getAndroidIdSha1())){
+            ulr.append("&androidid_sha1=").append(tracker.getAndroidIdSha1());
+        }else if(StringUtils.isNotBlank(tracker.getAndroidIdMd5())){
+            ulr.append("&androidid_md5=").append(tracker.getAndroidIdMd5());
+        }else if(StringUtils.isNotBlank(tracker.getImei())){
+            ulr.append("&imei=").append(tracker.getImei());
         }
         ulr.append("&clicktime=").append(String.valueOf(tracker.getCreateTime().getTime()));
         ulr.append("&ip=").append(tracker.getIp());

@@ -76,7 +76,9 @@ public class CallbackActiveController extends AbstractController {
     @ResponseBody
     public GeneralResponse serve(@RequestParam(value = "sid", defaultValue="", required = true) String sid,
                        	@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
-                       	@RequestParam(value = "o1", defaultValue="", required = false) String o1,
+                       	@RequestParam(value = "imei", defaultValue="", required = false) String imei,
+                        @RequestParam(value = "androidIdSha1", defaultValue="", required = false) String androidIdSha1,
+                        @RequestParam(value = "androidIdMd5", defaultValue="", required = false) String androidIdMd5,
                         @RequestParam(value = "ip", defaultValue="", required = false) String ip,
                         @RequestParam(value = "ua", defaultValue="", required = false) String ua,
                         @RequestParam(value = "activeTime", defaultValue="0", required = false) Long activeTime,
@@ -100,12 +102,12 @@ public class CallbackActiveController extends AbstractController {
     	    return new GeneralResponse("ko", "related record not found", HttpStatus.NOT_FOUND.value());
     	}
     	
-    	saveCallbackActive(sid, idfa, o1, ip, ua, activeTime, viewAttributed, partnerId, appId, tracker, campaign);
+    	saveCallbackActive(sid, idfa, androidIdSha1, androidIdMd5, imei, ip, ua, activeTime, viewAttributed, partnerId, appId, tracker, campaign);
     	
     	return new GeneralResponse("ok", null, HttpStatus.OK.value());
     }
 
-    private void saveCallbackActive(String sid, String idfa, String o1, String ip, String ua, Long activeTime,
+    private void saveCallbackActive(String sid, String idfa, String androidIdSha1, String androidIdMd5, String imei, String ip, String ua, Long activeTime,
                                     String viewAttributed, String partnerId, String appId, Tracker tracker, Campaign campaign) {
         try {
     		CallbackActivate callbackActive = new CallbackActivate();
@@ -117,11 +119,23 @@ public class CallbackActiveController extends AbstractController {
     			callbackActive.setIdfa(tracker.getIdfa());
     		}
     			
-    		if(StringUtils.isNotBlank(o1)){
-    			callbackActive.setO1(o1);
+    		if(StringUtils.isNotBlank(androidIdSha1)){
+    			callbackActive.setAndroidIdSha1(androidIdSha1);
     		}else{
-    			callbackActive.setO1(tracker.getO1());
+    			callbackActive.setAndroidIdSha1(tracker.getAndroidIdSha1());
     		}
+    		
+    		if(StringUtils.isNotBlank(androidIdMd5)){
+                callbackActive.setAndroidIdMd5(androidIdMd5);
+            }else{
+                callbackActive.setAndroidIdMd5(tracker.getAndroidIdMd5());
+            }
+    		
+    		if(StringUtils.isNotBlank(imei)){
+                callbackActive.setImei(imei);
+            }else{
+                callbackActive.setImei(tracker.getImei());
+            }
     		
     		if(StringUtils.isNotBlank(ip)){
     			callbackActive.setIp(ip);

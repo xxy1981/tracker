@@ -23,7 +23,9 @@ DROP TABLE IF EXISTS `callback_activate`;
 CREATE TABLE `callback_activate` (
   `sid` varchar(64) NOT NULL COMMENT '流水号',
   `idfa` varchar(64) DEFAULT NULL COMMENT 'iOS激活设备ID',
-  `o1` varchar(64) DEFAULT NULL COMMENT 'Android_ID的sha-1加密值，40位小写',
+  `androidid_md5` varchar(64) DEFAULT NULL COMMENT 'Android下的AndroidID，原文转大写，计算MD5，再转大写',
+  `androidid_sha1` varchar(64) DEFAULT NULL COMMENT 'Android_ID 的sha-1加密值，40位小写，iOS投放不传',
+  `imei` varchar(64) DEFAULT NULL COMMENT 'Android下的IMEI，原文，明文',
   `view_attributed` char(1) DEFAULT NULL COMMENT 'CTA匹配传0,VTA匹配传1',
   `partner_id` varchar(64) DEFAULT NULL COMMENT '客户公司拼音或英文缩写',
   `app_id` varchar(64) DEFAULT NULL COMMENT 'InMobi系统内的appId,由InMobi提供',
@@ -36,7 +38,6 @@ CREATE TABLE `callback_activate` (
 
 /*Data for the table `callback_activate` */
 
-insert  into `callback_activate`(`sid`,`idfa`,`o1`,`view_attributed`,`partner_id`,`app_id`,`ip`,`ua`,`event_name`,`create_time`) values ('1','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:16'),('10','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:39'),('11','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:41'),('2','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:18'),('213','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:01'),('3','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:20'),('4','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:24'),('5','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:26'),('6','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:29'),('7','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:31'),('8','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:33'),('9','213','213','','1','','',NULL,NULL,'2017-08-12 23:25:36');
 
 /*Table structure for table `campaign` */
 
@@ -84,7 +85,9 @@ DROP TABLE IF EXISTS `tracker`;
 CREATE TABLE `tracker` (
   `sid` varchar(64) NOT NULL COMMENT '流水号',
   `idfa` varchar(64) DEFAULT NULL COMMENT 'iOS设备ID，android投放不传',
-  `o1` varchar(64) DEFAULT NULL COMMENT 'Android_ID 的sha-1加密值，40位小写，iOS投放不传',
+  `androidid_md5` varchar(64) DEFAULT NULL COMMENT 'Android下的AndroidID，原文转大写，计算MD5，再转大写',
+  `androidid_sha1` varchar(64) DEFAULT NULL COMMENT 'Android_ID 的sha-1加密值，40位小写，iOS投放不传',
+  `imei` varchar(64) DEFAULT NULL COMMENT 'Android下的IMEI，原文，明文',
   `campaign_id` varchar(64) DEFAULT NULL COMMENT '活动ID',
   `channel` varchar(64) DEFAULT NULL COMMENT '渠道',
   `sub_channel` varchar(64) DEFAULT NULL COMMENT '子渠道（二级渠道）',
@@ -97,8 +100,6 @@ CREATE TABLE `tracker` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `tracker` */
-
-insert  into `tracker`(`sid`,`idfa`,`o1`,`campaign_id`,`channel`,`sub_channel`,`ip`,`ua`,`device_type`,`partner_id`,`create_time`) values ('1','1','2',NULL,'1',NULL,'0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-12 22:29:01'),('11','11','11',NULL,'11',NULL,'0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-12 22:52:48'),('111','213','213',NULL,'123',NULL,'0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-12 23:24:16'),('1122','213','213','1','1','123','0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-13 15:57:31'),('1212','213','213',NULL,'123',NULL,'0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-12 23:24:06'),('12123123','123','123',NULL,'213',NULL,'0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','','2017-08-12 23:08:16'),('1213','123123','123213','1','1','123213','0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-13 15:51:26'),('123','123','123',NULL,'123',NULL,'0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-12 23:23:03'),('13','213','213','1','1','123','0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-13 15:56:04'),('1we0bc1c-015c-1000-c911-01857f8f00b7','','f7451dc08d7ce4295d8 2b113c9d85247d5715ca2','A1B2c3D','inmobi','chn002','183.193.133.184','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','ANDROID','SINA','2017-08-13 20:40:03'),('2','2','2',NULL,'2',NULL,'127.0.0.1','2','2','2','2017-08-12 16:56:05'),('213','213','123','2','2','21','0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-13 16:05:17'),('2131','213','213',NULL,'123',NULL,'0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-12 23:23:52'),('2345','aeee0-e-e','','A1B2c3D','inmobi','asdtb','115.35.90.198','Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36','IOS','SINA','2017-08-13 20:47:51'),('a5e0bc1c-015c-1000-c911-01857f8f00b7','1792620C-9C57-4F1F-A8EA-DDE26B666EC2','','FlIVhg','inmobi','chn001','183.193.133.184','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','TENCENT','2017-08-13 20:39:23'),('qwe','qwe','qwe',NULL,'qwe',NULL,'0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-12 23:12:42'),('w','w','w',NULL,'w',NULL,'0:0:0:0:0:0:0:1','Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36','IOS','1','2017-08-12 22:29:11');
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

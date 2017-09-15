@@ -45,7 +45,7 @@
 	    		<tr>
 	    			<th style="width:15%">流水号</th>
 	    			<th style="width:20%">ISO设备ID</th>
-	    			<th style="width:20%">Android设备ID</th>
+	    			<th style="width:20%">Android设备ID（SHA-1）</th>
 	    			<th style="width:10%">渠道</th>
 	    			<th style="width:10%">客户ID</th>
 	    			<th style="width:10%">用户IP</th>
@@ -56,7 +56,7 @@
 			    		<tr>
 			    			<td>${tracker.sid!}</td>
 			    			<td>${tracker.idfa!}</td>
-			    			<td>${tracker.o1!}</td>
+			    			<td>${tracker.androidIdSha1!}</td>
 			    			<td>${tracker.channel!}</td>
 			    			<td>${tracker.partnerId!}</td>
 			    			<td>${tracker.ip!}</td>

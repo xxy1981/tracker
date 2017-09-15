@@ -28,7 +28,7 @@
 		            </select>（请选择活动）<br/>
 		            <input type="text" name="sid" value="${sid!}" placeholder="请输入流水号" style="width:400px"><br/>
 		            <input type="text" name="idfa" value="${idfa!}" placeholder="请输入ISO设备ID" style="width:400px">（苹果设备填写）<br/>
-		            <input type="text" name="o1" value="${o1!}" placeholder="请输入安卓设备ID" style="width:400px">（安卓设备填写）<br/>
+		            <input type="text" name="androidIdSha1" value="${androidIdSha1!}" placeholder="请输入安卓设备ID（SHA-1）" style="width:400px">（安卓设备填写）<br/>
 		            <input type="text" name="subChn" value="${subChn!}" placeholder="请输入二级渠道" style="width:400px"><br/>
 		            <select name="action" style="width:412px">
 		            	<option value="click">点击测试</option>

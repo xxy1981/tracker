@@ -81,7 +81,9 @@ public class TrackerController extends AbstractController {
            				@RequestParam(value = "action", defaultValue="click", required = false) String action,
            				@RequestParam(value = "sid", defaultValue="", required = false) String sid,
                        	@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
-                       	@RequestParam(value = "o1", defaultValue="", required = false) String o1,
+                       	@RequestParam(value = "imei", defaultValue="", required = false) String imei,
+                        @RequestParam(value = "androidIdSha1", defaultValue="", required = false) String androidIdSha1,
+                        @RequestParam(value = "androidIdMd5", defaultValue="", required = false) String androidIdMd5,
                        	@RequestParam(value = "subChn", defaultValue="", required = false) String subChn,
                        	//@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
                        	//@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
@@ -96,7 +98,7 @@ public class TrackerController extends AbstractController {
     	    return new GeneralResponse("ko", "related campaign record not found", HttpStatus.NOT_FOUND.value());
     	}
     	
-    	Tracker tracker = saveTracker(campaign, sid, idfa, o1, subChn, ip, ua, clickTime, httpRequest);
+    	Tracker tracker = saveTracker(campaign, sid, idfa, androidIdSha1, androidIdMd5, imei, subChn, ip, ua, clickTime, httpRequest);
     	
     	try {
     	    httpService.httpGetCall(campaign, tracker);
@@ -114,13 +116,15 @@ public class TrackerController extends AbstractController {
     					@RequestParam(value = "action", defaultValue="click", required = false) String action,
            				@RequestParam(value = "sid", defaultValue="", required = false) String sid,
                        	@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
-                       	@RequestParam(value = "o1", defaultValue="", required = false) String o1,
+                       	@RequestParam(value = "imei", defaultValue="", required = false) String imei,
+                        @RequestParam(value = "androidIdSha1", defaultValue="", required = false) String androidIdSha1,
+                        @RequestParam(value = "androidIdMd5", defaultValue="", required = false) String androidIdMd5,
                        	@RequestParam(value = "subChn", defaultValue="", required = false) String subChn,
                        	//@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
                         //@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
                         @RequestParam(value = "ip", defaultValue="", required = false) String ip,
                         @RequestParam(value = "ua", defaultValue="", required = false) String ua,
-                        @RequestParam(value = "clickTime", defaultValue="0", required = false) String clickTime,
+                        @RequestParam(value = "clickTime", defaultValue="", required = false) String clickTime,
                        	HttpServletRequest httpRequest,
                        	HttpServletResponse httpResponse
                       	) {
@@ -129,7 +133,7 @@ public class TrackerController extends AbstractController {
     	    return new GeneralResponse("ko", "related campaign record not found", HttpStatus.NOT_FOUND.value());
     	}
         
-    	Tracker tracker = saveTracker(campaign, sid, idfa, o1, subChn, ip, ua, clickTime, httpRequest);
+    	Tracker tracker = saveTracker(campaign, sid, idfa, androidIdSha1, androidIdMd5, imei, subChn, ip, ua, clickTime, httpRequest);
     	
     	try {
             httpService.httpGetCall(campaign, tracker);
@@ -146,13 +150,15 @@ public class TrackerController extends AbstractController {
 							@RequestParam(value = "action", defaultValue="click", required = false) String action,
 							@RequestParam(value = "sid", defaultValue="", required = false) String sid,
 							@RequestParam(value = "idfa", defaultValue="", required = false) String idfa,
-							@RequestParam(value = "o1", defaultValue="", required = false) String o1,
+							@RequestParam(value = "imei", defaultValue="", required = false) String imei,
+	                        @RequestParam(value = "androidIdSha1", defaultValue="", required = false) String androidIdSha1,
+	                        @RequestParam(value = "androidIdMd5", defaultValue="", required = false) String androidIdMd5,
 							@RequestParam(value = "subChn", defaultValue="", required = false) String subChn,
 	                        //@RequestHeader(value = "X-FORWARDED-FOR", required = false) String ip, //X-Forward-for
 	                        //@RequestHeader(value = "User-Agent", required = false) String ua, //x-device-user-agent
 	                        @RequestParam(value = "ip", defaultValue="", required = false) String ip,
 	                        @RequestParam(value = "ua", defaultValue="", required = false) String ua,
-	                        @RequestParam(value = "clickTime", defaultValue="0", required = false) String clickTime,
+	                        @RequestParam(value = "clickTime", defaultValue="", required = false) String clickTime,
 							HttpServletRequest httpRequest,
 							HttpServletResponse httpResponse
           	                ) {
@@ -161,7 +167,7 @@ public class TrackerController extends AbstractController {
 			return "ko";
 		}
 		
-		Tracker tracker = saveTracker(campaign, sid, idfa, o1, subChn, ip, ua, clickTime, httpRequest);
+		Tracker tracker = saveTracker(campaign, sid, idfa, androidIdSha1, androidIdMd5, imei, subChn, ip, ua, clickTime, httpRequest);
         
         httpService.httpGetCall(campaign, tracker);
 	        
@@ -173,14 +179,16 @@ public class TrackerController extends AbstractController {
      * @param campaign
      * @param sid
      * @param idfa
-     * @param o1
+     * @param androidIdSha1
+     * @param androidIdMd5
+     * @param imei
      * @param subChn
      * @param ip
      * @param ua
      * @param clickTime
      * @param httpRequest
      */
-    private Tracker saveTracker(Campaign campaign, String sid, String idfa, String o1, String subChn, String ip, String ua,
+    private Tracker saveTracker(Campaign campaign, String sid, String idfa, String androidIdSha1, String androidIdMd5, String imei, String subChn, String ip, String ua,
                              String clickTime, HttpServletRequest httpRequest) {
         try {
             String clinetIp = getIpAddr(httpRequest);
@@ -189,7 +197,9 @@ public class TrackerController extends AbstractController {
             Tracker tracker = new Tracker();
             tracker.setSid(sid);
             tracker.setIdfa(idfa);
-            tracker.setO1(o1);
+            tracker.setAndroidIdSha1(androidIdSha1);
+            tracker.setAndroidIdMd5(androidIdMd5);
+            tracker.setImei(imei);
             tracker.setCampaignId(campaign.getId());
             tracker.setChannel(campaign.getChannel());
             tracker.setSubChannel(subChn);

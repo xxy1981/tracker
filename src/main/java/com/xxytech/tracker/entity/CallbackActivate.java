@@ -21,8 +21,14 @@ public class CallbackActivate implements Serializable {
     @Column(name="idfa")
     private String idfa;
     
-    @Column(name="o1")
-    private String o1;
+    @Column(name="imei")
+    private String imei;
+    
+    @Column(name="androidid_md5")
+    private String androidIdMd5;
+    
+    @Column(name="androidid_sha1")
+    private String androidIdSha1;
     
     @Column(name="view_attributed")
     private String viewAttributed;
@@ -61,13 +67,29 @@ public class CallbackActivate implements Serializable {
 		this.idfa = idfa;
 	}
 
-	public String getO1() {
-		return o1;
-	}
-
-	public void setO1(String o1) {
-		this.o1 = o1;
-	}
+	public String getImei() {
+        return imei;
+    }
+    
+    public void setImei(String imei) {
+        this.imei = imei;
+    }
+    
+    public String getAndroidIdMd5() {
+        return androidIdMd5;
+    }
+    
+    public void setAndroidIdMd5(String androidIdMd5) {
+        this.androidIdMd5 = androidIdMd5;
+    }
+    
+    public String getAndroidIdSha1() {
+        return androidIdSha1;
+    }
+    
+    public void setAndroidIdSha1(String androidIdSha1) {
+        this.androidIdSha1 = androidIdSha1;
+    }
 
 	public String getViewAttributed() {
 		return viewAttributed;
